@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERIDEX — Deepfake Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030810;
+    --panel: #080f1e;
+    --border: #0d2040;
+    --accent: #00e5ff;
+    --accent2: #ff003c;
+    --accent3: #39ff14;
+    --warn: #ffb700;
+    --text: #b8d4f0;
+    --muted: #3a5475;
+    --glow: 0 0 20px rgba(0,229,255,0.3);
+    --glow2: 0 0 20px rgba(255,0,60,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,100,200,0.12) 0%, transparent 60%),
+      linear-gradient(180deg, rgba(0,229,255,0.02) 0%, transparent 100%);
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Grid bg */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,229,255,0.6);
+    letter-spacing: 4px;
+  }
+
+  .logo-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 10px var(--accent3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .status-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    letter-spacing: 2px;
+  }
+
+  .version {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .panel-icon {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    margin: 24px;
+    border: 1px dashed var(--muted);
+    padding: 60px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    background: rgba(0,229,255,0.01);
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+    box-shadow: inset 0 0 40px rgba(0,229,255,0.05), 0 0 20px rgba(0,229,255,0.1);
+  }
+
+  .upload-zone::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed rgba(0,229,255,0.08);
+    pointer-events: none;
+  }
+
+  .upload-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+
+  .upload-icon svg {
+    width: 64px; height: 64px;
+    stroke: var(--accent);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));
+  }
+
+  .upload-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .upload-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+
+  .tab-row {
+    display: flex;
+    gap: 1px;
+    margin: 0 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 24px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover::before { opacity: 0.1; }
+  .btn:hover { box-shadow: var(--glow); }
+
+  .btn.danger {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .btn.danger:hover { box-shadow: var(--glow2); }
+  .btn.danger::before { background: var(--accent2); }
+
+  /* PREVIEW */
+  .preview-area {
+    margin: 24px;
+    display: none;
+  }
+
+  .preview-area.active { display: block; }
+
+  .preview-frame {
+    border: 1px solid var(--border);
+    background: #000;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .preview-frame img, .preview-frame video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .scan-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: none;
+  }
+
+  .scan-overlay.active { display: block; }
+
+  .scan-line-anim {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: scandown 2s linear infinite;
+  }
+
+  @keyframes scandown {
+    0% { top: 0%; }
+    100% { top: 100%; }
+  }
+
+  .corner {
+    position: absolute;
+    width: 16px; height: 16px;
+  }
+  .corner.tl { top: 8px; left: 8px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner.tr { top: 8px; right: 8px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+  .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin: 0 24px 24px;
+  }
+
+  /* RESULTS PANEL */
+  .results-section {
+    margin: 24px;
+    display: none;
+  }
+
+  .results-section.active { display: block; }
+
+  .verdict-box {
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    position: relative;
+    text-align: center;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .verdict-box.real {
+    border-color: var(--accent3);
+    box-shadow: 0 0 30px rgba(57,255,20,0.1);
+  }
+
+  .verdict-box.fake {
+    border-color: var(--accent2);
+    box-shadow: 0 0 30px rgba(255,0,60,0.15);
+  }
+
+  .verdict-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .verdict-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+  }
+
+  .verdict-text.real { color: var(--accent3); text-shadow: 0 0 20px rgba(57,255,20,0.5); }
+  .verdict-text.fake { color: var(--accent2); text-shadow: 0 0 20px rgba(255,0,60,0.5); }
+
+  /* CONFIDENCE BAR */
+  .confidence-block {
+    margin-bottom: 20px;
+  }
+
+  .conf-label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .conf-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .conf-pct {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .conf-pct.high { color: var(--accent2); }
+  .conf-pct.low { color: var(--accent3); }
+
+  .conf-bar {
+    height: 6px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .conf-fill {
+    height: 100%;
+    transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+  }
+
+  .conf-fill.fake-fill {
+    background: linear-gradient(90deg, #ff003c, #ff6b8a);
+    box-shadow: 0 0 10px rgba(255,0,60,0.5);
+  }
+
+  .conf-fill.real-fill {
+    background: linear-gradient(90deg, #39ff14, #7fff5f);
+    box-shadow: 0 0 10px rgba(57,255,20,0.5);
+  }
+
+  /* ANALYSIS METRICS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 20px;
+  }
+
+  .metric-cell {
+    background: var(--panel);
+    padding: 14px 16px;
+  }
+
+  .metric-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .metric-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .metric-value.flag { color: var(--warn); }
+  .metric-value.safe { color: var(--accent3); }
+  .metric-value.danger { color: var(--accent2); }
+
+  /* SIDEBAR */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ACTIVITY LOG */
+  .log-list {
+    padding: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .log-list::-webkit-scrollbar { width: 3px; }
+  .log-list::-webkit-scrollbar-track { background: transparent; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--muted); }
+
+  .log-entry {
+    display: flex;
+    gap: 10px;
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(13,32,64,0.5);
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .log-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  .log-msg {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .log-msg.ok { color: var(--accent3); }
+  .log-msg.warn { color: var(--warn); }
+  .log-msg.err { color: var(--accent2); }
+  .log-msg.info { color: var(--accent); }
+
+  /* STATS PANEL */
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* THREAT METER */
+  .threat-meter-panel {
+    padding: 20px;
+  }
+
+  .threat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .radial-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .radial-svg {
+    width: 120px; height: 120px;
+    transform: rotate(-90deg);
+  }
+
+  .radial-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 8;
+  }
+
+  .radial-fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: butt;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s;
+  }
+
+  .radial-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .radial-wrap {
+    position: relative;
+    width: 120px; height: 120px;
+  }
+
+  .radial-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .radial-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-align: center;
+  }
+
+  /* MODEL BADGES */
+  .model-badges {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .model-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(0,229,255,0.03);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+  }
+
+  .model-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .model-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  .model-score.safe { color: var(--accent3); }
+
+  /* LOADING STATE */
+  .analyzing-state {
+    display: none;
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .analyzing-state.active { display: block; }
+
+  .analyze-spinner {
+    width: 60px; height: 60px;
+    margin: 0 auto 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .analyze-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+
+  .analyze-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .tech-tags {
+    display: flex;
+    gap: 8px;
+  }
+
+  .tech-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* HIDDEN FILE INPUT */
+  #fileInput { display: none; }
+
+  /* GLITCH on logo */
+  .logo-mark {
+    animation: glitch 8s infinite;
+  }
+
+  @keyframes glitch {
+    0%, 95%, 100% { text-shadow: 0 0 30px rgba(0,229,255,0.6); }
+    96% { text-shadow: -2px 0 rgba(255,0,60,0.8), 2px 0 rgba(0,229,255,0.8); }
+    97% { text-shadow: 2px 0 rgba(255,0,60,0.8), -2px 0 rgba(0,229,255,0.8); }
+  }
+
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .sidebar { flex-direction: row; flex-wrap: wrap; }
+    .sidebar .panel { flex: 1; min-width: 280px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <div class="logo-mark">VERIDEX</div>
+      <div class="logo-sub">Neural Authenticity Engine v3.7</div>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <div class="status-text">SYSTEM ONLINE</div>
+      <div class="version">BUILD 2026.02.20</div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- LEFT: MAIN ANALYSIS -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- UPLOAD PANEL -->
+      <div class="panel" id="uploadPanel">
+        <div class="panel-header">
+          <div class="panel-icon"></div>
+          <div class="panel-title">Media Input</div>
+        </div>
+        <div class="tab-row">
+          <div class="tab active" onclick="switchTab(this, 'image')">IMAGE</div>
+          <div class="tab" onclick="switchTab(this, 'video')">VIDEO</div>
+          <div class="tab" onclick="switchTab(this, 'batch')">BATCH</div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">
+            <svg viewBox="0 0 64 64" fill="none" stroke-width="1.5">
+              <rect x="4" y="12" width="56" height="40" rx="2"/>
+              <circle cx="20" cy="28" r="6"/>
+              <path d="M4 40 L20 26 L34 36 L44 26 L60 40"/>
+              <path d="M32 4 L32 12 M28 8 L32 4 L36 8"/>
+            </svg>
+          </div>
+          <div class="upload-title">DROP MEDIA FILE</div>
+          <div class="upload-sub">PNG · JPG · MP4 · MOV · AVI · MAX 500MB</div>
+          <button class="btn" style="margin: 0 auto;" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            SELECT FILE
+          </button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" onchange="handleFile(this)">
+
+        <!-- Preview (hidden until file selected) -->
+        <div class="preview-area" id="previewArea">
+          <div class="preview-frame">
+            <img id="previewImg" src="" alt="" style="display:none;">
+            <video id="previewVid" controls style="display:none; max-width:100%;"></video>
+            <div class="scan-overlay" id="scanOverlay">
+              <div class="scan-line-anim"></div>
+              <div class="corner tl"></div>
+              <div class="corner tr"></div>
+              <div class="corner bl"></div>
+              <div class="corner br"></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn" onclick="startAnalysis()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+              </svg>
+              RUN ANALYSIS
+            </button>
+            <button class="btn danger" onclick="resetAll()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 109-9M3 3v6h6"/>
+              </svg>
+              RESET
+            </button>
+          </div>
+        </div>
+
+        <!-- Analyzing State -->
+        <div class="analyzing-state" id="analyzingState">
+          <div class="analyze-spinner"></div>
+          <div class="analyze-text" id="analyzeStep">INITIALIZING MODELS</div>
+          <div class="analyze-sub" id="analyzeProgress">Xception · EfficientNet · Frequency Analysis</div>
+        </div>
+      </div>
+
+      <!-- RESULTS PANEL -->
+      <div class="panel" id="resultsPanel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background: var(--accent2);"></div>
+          <div class="panel-title">Analysis Results</div>
+        </div>
+        <div class="results-section" id="resultsSection">
+
+          <div class="verdict-box" id="verdictBox">
+            <div class="verdict-label">CLASSIFICATION VERDICT</div>
+            <div class="verdict-text" id="verdictText">—</div>
+          </div>
+
+          <div style="padding: 0 24px 20px;">
+            <div class="confidence-block">
+              <div class="conf-label-row">
+                <div class="conf-label">DEEPFAKE PROBABILITY</div>
+                <div class="conf-pct" id="fakePct">0%</div>
+              </div>
+              <div class="conf-bar">
+                <div class="conf-fill fake-fill" id="fakeFill" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div class="confidence-block">
+              <div class="conf-label-row">
+                <div class="conf-label">AUTHENTICITY SCORE</div>
+                <div class="conf-pct" id="realPct" style="color: var(--accent3);">0%</div>
+              </div>
+              <div class="conf-bar">
+                <div class="conf-fill real-fill" id="realFill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics-grid" id="metricsGrid">
+            <div class="metric-cell">
+              <div class="metric-name">Facial Consistency</div>
+              <div class="metric-value" id="m1">—</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-name">Frequency Artifacts</div>
+              <div class="metric-value" id="m2">—</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-name">Eye Blink Pattern</div>
+              <div class="metric-value" id="m3">—</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-name">GAN Fingerprint</div>
+              <div class="metric-value" id="m4">—</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-name">Skin Texture</div>
+              <div class="metric-value" id="m5">—</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-name">Compression Noise</div>
+              <div class="metric-value" id="m6">—</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- empty state -->
+        <div style="padding: 40px; text-align: center; color: var(--muted);" id="resultsEmpty">
+          <div style="font-family: 'Share Tech Mono'; font-size: 10px; letter-spacing: 3px;">AWAITING INPUT</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- THREAT LEVEL -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background: var(--warn);"></div>
+          <div class="panel-title">Threat Index</div>
+        </div>
+        <div class="threat-meter-panel">
+          <div class="threat-label">OVERALL RISK ASSESSMENT</div>
+          <div class="radial-container">
+            <div class="radial-wrap">
+              <svg class="radial-svg" viewBox="0 0 120 120">
+                <circle class="radial-bg" cx="60" cy="60" r="50"/>
+                <circle class="radial-fill" id="radialFill" cx="60" cy="60" r="50"
+                  stroke="#00e5ff"
+                  stroke-dasharray="314"
+                  stroke-dashoffset="314"/>
+              </svg>
+              <div class="radial-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div class="radial-text" id="threatPct">—</div>
+                <div class="radial-sub">THREAT</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODEL SCORES -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon"></div>
+          <div class="panel-title">Model Ensemble</div>
+        </div>
+        <div class="model-badges">
+          <div class="model-badge">
+            <div class="model-name">XCEPTION</div>
+            <div class="model-score" id="s1">—</div>
+          </div>
+          <div class="model-badge">
+            <div class="model-name">EFFICIENTNET-B7</div>
+            <div class="model-score" id="s2">—</div>
+          </div>
+          <div class="model-badge">
+            <div class="model-name">FREQ. ANALYZER</div>
+            <div class="model-score" id="s3">—</div>
+          </div>
+          <div class="model-badge">
+            <div class="model-name">FACE-FORENSICS++</div>
+            <div class="model-score" id="s4">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SESSION STATS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background: var(--accent3);"></div>
+          <div class="panel-title">Session Stats</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">TOTAL SCANNED</div>
+          <div class="stat-val" id="totalScanned">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">DEEPFAKES FOUND</div>
+          <div class="stat-val" style="color: var(--accent2);" id="deepfakesFound">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">AUTHENTIC</div>
+          <div class="stat-val" style="color: var(--accent3);" id="authenticFound">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">AVG CONFIDENCE</div>
+          <div class="stat-val" id="avgConf">—</div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background: var(--muted);"></div>
+          <div class="panel-title">System Log</div>
+        </div>
+        <div class="log-list" id="logList">
+          <div class="log-entry">
+            <div class="log-time">00:00:00</div>
+            <div class="log-msg ok">SYSTEM INITIALIZED</div>
+          </div>
+          <div class="log-entry">
+            <div class="log-time">00:00:01</div>
+            <div class="log-msg info">MODELS LOADED: XCEPTION, EFFICIENTNET</div>
+          </div>
+          <div class="log-entry">
+            <div class="log-time">00:00:02</div>
+            <div class="log-msg ok">AWAITING INPUT...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">© 2026 VERIDEX SYSTEMS — NEURAL AUTHENTICITY ENGINE — CONFIDENTIAL</div>
+    <div class="tech-tags">
+      <div class="tech-tag">TENSORFLOW</div>
+      <div class="tech-tag">PYTORCH</div>
+      <div class="tech-tag">FLASK</div>
+      <div class="tech-tag">REACT</div>
+      <div class="tech-tag">AWS</div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+let currentTab = 'image';
+let sessionStats = { total: 0, fake: 0, real: 0, confSum: 0 };
+let startTime = Date.now();
+
+function getTime() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+  const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+  const s = String(elapsed%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+
+function addLog(msg, type = 'info') {
+  const log = document.getElementById('logList');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<div class="log-time">${getTime()}</div><div class="log-msg ${type}">${msg}</div>`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = tab;
+  addLog(`MODE SWITCHED: ${tab.toUpperCase()}`, 'info');
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const isVideo = file.type.startsWith('video/');
+  const isImage = file.type.startsWith('image/');
+
+  addLog(`FILE RECEIVED: ${file.name.toUpperCase()}`, 'info');
+  addLog(`SIZE: ${(file.size/1024/1024).toFixed(2)} MB | TYPE: ${file.type}`, 'info');
+
+  const url = URL.createObjectURL(file);
+  const img = document.getElementById('previewImg');
+  const vid = document.getElementById('previewVid');
+
+  if (isImage) {
+    img.src = url; img.style.display = '';
+    vid.style.display = 'none';
+  } else if (isVideo) {
+    vid.src = url; vid.style.display = '';
+    img.style.display = 'none';
+  }
+
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('previewArea').classList.add('active');
+  document.querySelector('.tab-row').style.display = 'none';
+
+  document.getElementById('resultsEmpty').style.display = 'none';
+}
+
+function startAnalysis() {
+  document.getElementById('previewArea').classList.remove('active');
+  document.getElementById('analyzingState').classList.add('active');
+  document.getElementById('scanOverlay').classList.add('active');
+
+  addLog('ANALYSIS STARTED — MULTI-MODEL ENSEMBLE', 'warn');
+
+  const steps = [
+    [400, 'PREPROCESSING MEDIA', 'Normalizing · Resizing · Color calibration'],
+    [900, 'RUNNING XCEPTION CNN', 'Inception modules · Depthwise separable convolutions'],
+    [1500, 'RUNNING EFFICIENTNET-B7', 'Compound scaling · Feature extraction'],
+    [2100, 'FREQUENCY DOMAIN ANALYSIS', 'FFT artifacts · DCT coefficients · Spectral noise'],
+    [2700, 'FACE FORENSICS++ CHECK', 'Landmark detection · Blending boundary analysis'],
+    [3200, 'ENSEMBLE AGGREGATION', 'Weighted voting · Confidence calibration'],
+  ];
+
+  steps.forEach(([delay, step, sub]) => {
+    setTimeout(() => {
+      document.getElementById('analyzeStep').textContent = step;
+      document.getElementById('analyzeProgress').textContent = sub;
+      addLog(step, 'info');
+    }, delay);
+  });
+
+  setTimeout(() => {
+    showResults();
+  }, 3800);
+}
+
+function showResults() {
+  document.getElementById('analyzingState').classList.remove('active');
+
+  // Simulate result — randomize for demo
+  const isFake = Math.random() > 0.45;
+  const fakeConf = isFake ? 70 + Math.random()*28 : 5 + Math.random()*25;
+  const realConf = 100 - fakeConf;
+
+  sessionStats.total++;
+  if (isFake) sessionStats.fake++; else sessionStats.real++;
+  sessionStats.confSum += Math.max(fakeConf, realConf);
+
+  // Verdict
+  const vBox = document.getElementById('verdictBox');
+  const vText = document.getElementById('verdictText');
+  vBox.className = 'verdict-box ' + (isFake ? 'fake' : 'real');
+  vText.className = 'verdict-text ' + (isFake ? 'fake' : 'real');
+  vText.textContent = isFake ? 'DEEPFAKE' : 'AUTHENTIC';
+
+  // Bars
+  setTimeout(() => {
+    document.getElementById('fakeFill').style.width = fakeConf.toFixed(1) + '%';
+    document.getElementById('realFill').style.width = realConf.toFixed(1) + '%';
+    document.getElementById('fakePct').textContent = fakeConf.toFixed(1) + '%';
+    document.getElementById('realPct').textContent = realConf.toFixed(1) + '%';
+  }, 100);
+
+  // Metrics
+  const faceOk = !isFake || Math.random() > 0.6;
+  const freqOk = !isFake || Math.random() > 0.4;
+  const blinkOk = !isFake || Math.random() > 0.5;
+  const ganFlag = isFake && Math.random() > 0.3;
+
+  setMetric('m1', faceOk ? 'CONSISTENT' : 'ANOMALOUS', faceOk ? 'safe' : 'danger');
+  setMetric('m2', freqOk ? 'CLEAN' : 'ARTIFACTS DETECTED', freqOk ? 'safe' : 'danger');
+  setMetric('m3', blinkOk ? 'NATURAL' : 'IRREGULAR', blinkOk ? 'safe' : 'flag');
+  setMetric('m4', ganFlag ? 'DETECTED' : 'NOT FOUND', ganFlag ? 'danger' : 'safe');
+  setMetric('m5', !isFake ? 'NATURAL' : 'SYNTHETIC', !isFake ? 'safe' : 'danger');
+  setMetric('m6', 'NORMAL', 'safe');
+
+  // Model scores
+  const s = (base) => (base + (Math.random()-0.5)*10).toFixed(1) + '%';
+  const fakePctNum = fakeConf;
+  const sc = (v) => v > 50 ? 'danger' : 'safe';
+  document.getElementById('s1').textContent = fakePctNum.toFixed(1)+'%';
+  document.getElementById('s1').className = 'model-score ' + sc(fakePctNum);
+  const v2 = fakePctNum + (Math.random()-0.5)*10;
+  document.getElementById('s2').textContent = Math.max(0,Math.min(100,v2)).toFixed(1)+'%';
+  document.getElementById('s2').className = 'model-score ' + sc(v2);
+  const v3 = fakePctNum + (Math.random()-0.5)*15;
+  document.getElementById('s3').textContent = Math.max(0,Math.min(100,v3)).toFixed(1)+'%';
+  document.getElementById('s3').className = 'model-score ' + sc(v3);
+  const v4 = fakePctNum + (Math.random()-0.5)*12;
+  document.getElementById('s4').textContent = Math.max(0,Math.min(100,v4)).toFixed(1)+'%';
+  document.getElementById('s4').className = 'model-score ' + sc(v4);
+
+  // Radial
+  const circumference = 314;
+  const offset = circumference - (fakePctNum/100 * circumference);
+  const radial = document.getElementById('radialFill');
+  radial.style.strokeDashoffset = circumference; // reset
+  const color = fakePctNum > 70 ? '#ff003c' : fakePctNum > 40 ? '#ffb700' : '#39ff14';
+  radial.style.stroke = color;
+  setTimeout(() => { radial.style.strokeDashoffset = offset; }, 100);
+  document.getElementById('threatPct').textContent = fakePctNum.toFixed(0)+'%';
+  document.getElementById('threatPct').style.color = color;
+
+  // Session stats
+  document.getElementById('totalScanned').textContent = sessionStats.total;
+  document.getElementById('deepfakesFound').textContent = sessionStats.fake;
+  document.getElementById('authenticFound').textContent = sessionStats.real;
+  document.getElementById('avgConf').textContent = (sessionStats.confSum/sessionStats.total).toFixed(1)+'%';
+
+  // Show results
+  document.getElementById('resultsSection').classList.add('active');
+
+  addLog(`VERDICT: ${isFake ? '⚠ DEEPFAKE DETECTED' : '✓ AUTHENTIC MEDIA'}`, isFake ? 'err' : 'ok');
+  addLog(`CONFIDENCE: ${Math.max(fakeConf,realConf).toFixed(1)}%`, 'info');
+  addLog('ANALYSIS COMPLETE', 'ok');
+
+  // Show preview again for reference
+  document.getElementById('previewArea').classList.add('active');
+  document.getElementById('scanOverlay').classList.remove('active');
+}
+
+function setMetric(id, value, cls) {
+  const el = document.getElementById(id);
+  el.textContent = value;
+  el.className = 'metric-value ' + cls;
+}
+
+function resetAll() {
+  document.getElementById('previewArea').classList.remove('active');
+  document.getElementById('uploadZone').style.display = '';
+  document.querySelector('.tab-row').style.display = 'flex';
+  document.getElementById('analyzingState').classList.remove('active');
+  document.getElementById('resultsSection').classList.remove('active');
+  document.getElementById('resultsEmpty').style.display = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewVid').style.display = 'none';
+  document.getElementById('radialFill').style.strokeDashoffset = '314';
+  document.getElementById('threatPct').textContent = '—';
+  addLog('SESSION RESET', 'warn');
+}
+
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const inp = document.getElementById('fileInput');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    inp.files = dt.files;
+    handleFile(inp);
+  }
+});
+</script>
+</body>
+</html>
