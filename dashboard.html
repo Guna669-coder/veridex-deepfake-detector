@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERIDEX — Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#020a14;--panel:#040f1e;--panel2:#061528;
+  --border:#0a2040;--border2:#0d2a50;
+  --accent:#00e5ff;--accent2:#ff003c;--accent3:#39ff14;--warn:#ffb700;--purple:#9d00ff;
+  --text:#b8d4f0;--muted:#2a4060;--muted2:#3a5878;
+  --shadow:0 8px 32px rgba(0,0,0,0.7);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* GRID BG */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);
+  background-size:48px 48px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,100,200,0.1) 0%,transparent 60%)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:0 24px 60px}
+
+/* ── HEADER ── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:32px;
+  flex-wrap:wrap;gap:12px;
+}
+.header-left{display:flex;align-items:center;gap:16px}
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);
+  letter-spacing:2px;text-decoration:none;border:1px solid var(--border);
+  padding:7px 14px;transition:all .2s;cursor:pointer;background:none;
+}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.header-title-block{}
+.header-logo{font-family:'Orbitron',monospace;font-size:clamp(16px,3vw,22px);font-weight:900;color:var(--accent);letter-spacing:4px}
+.header-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:3px;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.live-badge{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent3);letter-spacing:2px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);box-shadow:0 0 10px var(--accent3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-sm{
+  display:flex;align-items:center;gap:6px;
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
+  padding:7px 14px;border:1px solid var(--border);color:var(--muted2);
+  background:none;cursor:pointer;transition:all .2s;
+}
+.btn-sm:hover{border-color:var(--accent2);color:var(--accent2)}
+.btn-sm.accent{border-color:var(--accent);color:var(--accent)}
+.btn-sm.accent:hover{background:rgba(0,229,255,0.08)}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);margin-bottom:24px}
+.kpi-card{
+  background:var(--panel);padding:20px 18px;position:relative;overflow:hidden;
+  transition:background .2s;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .3s}
+.kpi-card:hover{background:var(--panel2)}
+.kpi-card:hover::before{opacity:1}
+.kpi-card.c1::before{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.kpi-card.c2::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
+.kpi-card.c3::before{background:linear-gradient(90deg,transparent,var(--accent3),transparent)}
+.kpi-card.c4::before{background:linear-gradient(90deg,transparent,var(--warn),transparent)}
+.kpi-card.c5::before{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.kpi-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted2);margin-bottom:8px}
+.kpi-val{font-family:'Orbitron',monospace;font-size:clamp(22px,3vw,32px);font-weight:900;line-height:1}
+.kpi-val.blue{color:var(--accent)}
+.kpi-val.red{color:var(--accent2)}
+.kpi-val.green{color:var(--accent3)}
+.kpi-val.yellow{color:var(--warn)}
+.kpi-val.purple{color:var(--purple)}
+.kpi-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px}
+.kpi-trend{position:absolute;top:18px;right:18px;font-family:'Share Tech Mono',monospace;font-size:10px}
+.kpi-trend.up{color:var(--accent3)}
+.kpi-trend.down{color:var(--accent2)}
+
+/* ── CHARTS GRID ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.chart-full{grid-column:1/-1}
+
+.panel-card{background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden}
+.panel-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
+.pc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.pc-title{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--accent)}
+.pc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pc-head-left{display:flex;align-items:center;gap:8px}
+.pc-body{padding:20px}
+
+/* ── HISTORY TABLE ── */
+.history-table{width:100%;border-collapse:collapse}
+.history-table th{
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
+  color:var(--muted2);padding:8px 12px;border-bottom:1px solid var(--border);
+  text-align:left;font-weight:normal;
+}
+.history-table td{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  padding:9px 12px;border-bottom:1px solid rgba(10,32,64,.5);
+  color:var(--text);
+}
+.history-table tr:last-child td{border-bottom:none}
+.history-table tr:hover td{background:rgba(0,229,255,.02)}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'Orbitron',monospace;font-size:8px;font-weight:700;letter-spacing:1px;
+  padding:3px 8px;
+}
+.badge.fake{color:var(--accent2);border:1px solid var(--accent2);background:rgba(255,0,60,.06)}
+.badge.real{color:var(--accent3);border:1px solid var(--accent3);background:rgba(57,255,20,.06)}
+.conf-mini{display:flex;align-items:center;gap:8px}
+.conf-mini-bar{flex:1;height:4px;background:var(--border);max-width:80px}
+.conf-mini-fill{height:100%}
+.conf-mini-fill.f{background:var(--accent2)}
+.conf-mini-fill.r{background:var(--accent3)}
+
+/* ── RISK BREAKDOWN ── */
+.risk-bars{display:flex;flex-direction:column;gap:12px}
+.risk-row{display:flex;align-items:center;gap:12px}
+.risk-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:1px;width:120px;flex-shrink:0}
+.risk-track{flex:1;height:6px;background:var(--border);position:relative}
+.risk-fill{height:100%;transition:width 1s ease}
+.risk-pct{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;width:40px;text-align:right}
+
+/* ── ACTIVITY FEED ── */
+.activity-feed{max-height:280px;overflow-y:auto}
+.activity-feed::-webkit-scrollbar{width:3px}
+.activity-feed::-webkit-scrollbar-thumb{background:var(--muted)}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,32,64,.4)}
+.activity-item:last-child{border-bottom:none}
+.act-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.act-icon.fake{background:rgba(255,0,60,.1);border:1px solid var(--accent2)}
+.act-icon.real{background:rgba(57,255,20,.1);border:1px solid var(--accent3)}
+.act-body{}
+.act-title{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+.act-title.fake{color:var(--accent2)}
+.act-title.real{color:var(--accent3)}
+.act-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2)}
+
+/* ── DEMO CONTROLS ── */
+.demo-bar{
+  background:var(--panel);border:1px solid var(--border);
+  padding:16px 20px;margin-bottom:24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.demo-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:2px}
+.demo-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted2)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-text{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px}
+
+/* ── GAUGE ── */
+.gauge-wrap{display:flex;justify-content:center;align-items:center;padding:10px 0}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .charts-grid{grid-template-columns:1fr}
+  .chart-full{grid-column:1}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .wrap{padding:0 12px 40px}
+  .charts-grid{gap:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <a class="back-btn" href="index.html">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        BACK
+      </a>
+      <div class="header-title-block">
+        <div class="header-logo">VERIDEX</div>
+        <div class="header-sub">ANALYTICS DASHBOARD — REAL-TIME INTELLIGENCE</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div>LIVE DATA</div>
+      <button class="btn-sm accent" onclick="addDemoScan()">+ SIMULATE SCAN</button>
+      <button class="btn-sm" onclick="clearAllData()">🗑 CLEAR DATA</button>
+      <button class="btn-sm accent" onclick="exportData()">⬇ EXPORT CSV</button>
+    </div>
+  </header>
+
+  <!-- DEMO BAR -->
+  <div class="demo-bar">
+    <div class="demo-label">⚡ DEMO MODE — Click buttons to simulate scans and populate dashboard</div>
+    <div class="demo-btns">
+      <button class="btn-sm accent" onclick="addBulkScans(10)">+10 RANDOM SCANS</button>
+      <button class="btn-sm accent" onclick="addBulkScans(50)">+50 RANDOM SCANS</button>
+      <button class="btn-sm" onclick="addBulkScans(100)">+100 SCANS</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card c1">
+      <div class="kpi-label">TOTAL SCANS</div>
+      <div class="kpi-val blue" id="kpiTotal">0</div>
+      <div class="kpi-sub">ALL TIME</div>
+      <div class="kpi-trend up" id="kpiTotalTrend"></div>
+    </div>
+    <div class="kpi-card c2">
+      <div class="kpi-label">DEEPFAKES DETECTED</div>
+      <div class="kpi-val red" id="kpiFake">0</div>
+      <div class="kpi-sub" id="kpiFakePct">0% of total</div>
+    </div>
+    <div class="kpi-card c3">
+      <div class="kpi-label">AUTHENTIC MEDIA</div>
+      <div class="kpi-val green" id="kpiReal">0</div>
+      <div class="kpi-sub" id="kpiRealPct">0% of total</div>
+    </div>
+    <div class="kpi-card c4">
+      <div class="kpi-label">AVG CONFIDENCE</div>
+      <div class="kpi-val yellow" id="kpiConf">—</div>
+      <div class="kpi-sub">ACROSS ALL SCANS</div>
+    </div>
+    <div class="kpi-card c5">
+      <div class="kpi-label">HIGHEST THREAT</div>
+      <div class="kpi-val purple" id="kpiMax">—</div>
+      <div class="kpi-sub">PEAK DEEPFAKE SCORE</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-grid">
+
+    <!-- DAILY SCAN TREND -->
+    <div class="panel-card chart-full">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent)"></div>
+          <div class="pc-title">SCAN ACTIVITY — LAST 14 DAYS</div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:1px" id="trendLabel">—</div>
+      </div>
+      <div class="pc-body">
+        <canvas id="trendChart" height="80"></canvas>
+      </div>
+    </div>
+
+    <!-- VERDICT DONUT -->
+    <div class="panel-card">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2)"></div>
+          <div class="pc-title">VERDICT DISTRIBUTION</div>
+        </div>
+      </div>
+      <div class="pc-body">
+        <canvas id="donutChart" height="200"></canvas>
+        <div id="donutLegend" style="display:flex;justify-content:center;gap:24px;margin-top:16px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+    <!-- CONFIDENCE HISTOGRAM -->
+    <div class="panel-card">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></div>
+          <div class="pc-title">CONFIDENCE DISTRIBUTION</div>
+        </div>
+      </div>
+      <div class="pc-body">
+        <canvas id="histChart" height="200"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-grid" style="margin-bottom:20px">
+
+    <!-- FORENSIC BREAKDOWN -->
+    <div class="panel-card">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--accent3);box-shadow:0 0 6px var(--accent3)"></div>
+          <div class="pc-title">FORENSIC SIGNAL BREAKDOWN</div>
+        </div>
+      </div>
+      <div class="pc-body">
+        <div class="risk-bars" id="riskBars">
+          <div class="risk-row"><div class="risk-label">FACIAL CONSIST.</div><div class="risk-track"><div class="risk-fill" style="background:var(--accent);width:0%" id="rb1"></div></div><div class="risk-pct" style="color:var(--accent)" id="rp1">0%</div></div>
+          <div class="risk-row"><div class="risk-label">FREQ. ARTIFACTS</div><div class="risk-track"><div class="risk-fill" style="background:var(--accent2);width:0%" id="rb2"></div></div><div class="risk-pct" style="color:var(--accent2)" id="rp2">0%</div></div>
+          <div class="risk-row"><div class="risk-label">EYE BLINK</div><div class="risk-track"><div class="risk-fill" style="background:var(--warn);width:0%" id="rb3"></div></div><div class="risk-pct" style="color:var(--warn)" id="rp3">0%</div></div>
+          <div class="risk-row"><div class="risk-label">GAN FINGERPRINT</div><div class="risk-track"><div class="risk-fill" style="background:var(--purple);width:0%" id="rb4"></div></div><div class="risk-pct" style="color:var(--purple)" id="rp4">0%</div></div>
+          <div class="risk-row"><div class="risk-label">SKIN TEXTURE</div><div class="risk-track"><div class="risk-fill" style="background:var(--accent3);width:0%" id="rb5"></div></div><div class="risk-pct" style="color:var(--accent3)" id="rp5">0%</div></div>
+          <div class="risk-row"><div class="risk-label">COMPRESSION</div><div class="risk-track"><div class="risk-fill" style="background:#ff6b35;width:0%" id="rb6"></div></div><div class="risk-pct" style="color:#ff6b35" id="rp6">0%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODEL PERFORMANCE -->
+    <div class="panel-card">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>
+          <div class="pc-title">MODEL PERFORMANCE</div>
+        </div>
+      </div>
+      <div class="pc-body">
+        <canvas id="radarChart" height="220"></canvas>
+      </div>
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <div class="panel-card chart-full">
+      <div class="pc-header">
+        <div class="pc-head-left">
+          <div class="pc-dot" style="background:var(--muted2)"></div>
+          <div class="pc-title">RECENT ACTIVITY</div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2)" id="actCount">0 EVENTS</div>
+      </div>
+      <div class="pc-body" style="padding:0">
+        <div class="activity-feed" id="activityFeed">
+          <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">NO SCANS YET — SIMULATE OR RUN REAL SCANS</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCAN HISTORY TABLE -->
+  <div class="panel-card">
+    <div class="pc-header">
+      <div class="pc-head-left">
+        <div class="pc-dot" style="background:var(--accent)"></div>
+        <div class="pc-title">FULL SCAN HISTORY</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" onclick="filterHistory('all')" id="fAll" style="border-color:var(--accent);color:var(--accent)">ALL</button>
+        <button class="btn-sm" onclick="filterHistory('fake')" id="fFake">DEEPFAKE</button>
+        <button class="btn-sm" onclick="filterHistory('real')" id="fReal">AUTHENTIC</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>TIMESTAMP</th>
+            <th>FILE</th>
+            <th>TYPE</th>
+            <th>VERDICT</th>
+            <th>CONFIDENCE</th>
+            <th>XCEPTION</th>
+            <th>EFFICIENTNET</th>
+            <th>FREQ. ANALYSIS</th>
+            <th>FACE FF++</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px">NO SCAN DATA YET</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA STORE ──
+const STORE_KEY = 'veridex_scans';
+let scans = [];
+let filterMode = 'all';
+
+// Charts
+let trendChart, donutChart, histChart, radarChart;
+
+// ── LOAD FROM STORAGE ──
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    scans = raw ? JSON.parse(raw) : [];
+  } catch(e) { scans = []; }
+}
+
+function saveData() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(scans)); } catch(e) {}
+}
+
+// ── ADD SCAN ──
+function addScan(data) {
+  scans.unshift(data);
+  if (scans.length > 500) scans = scans.slice(0, 500); // keep last 500
+  saveData();
+  updateAll();
+}
+
+function addDemoScan() {
+  const isFake = Math.random() > 0.45;
+  const fakeConf = isFake ? 65 + Math.random()*34 : 3 + Math.random()*28;
+  const files = ['portrait.jpg','video_clip.mp4','selfie.png','interview.mp4','profile_pic.jpg','speech.mp4','news_anchor.jpg','social_post.png'];
+  addScan({
+    id: Date.now() + Math.random(),
+    ts: Date.now(),
+    file: files[Math.floor(Math.random()*files.length)],
+    type: Math.random()>.5?'IMAGE':'VIDEO',
+    verdict: isFake ? 'DEEPFAKE' : 'AUTHENTIC',
+    isFake,
+    confidence: Math.max(fakeConf, 100-fakeConf).toFixed(1),
+    fakeConf: fakeConf.toFixed(1),
+    models: {
+      xception: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*14)).toFixed(1),
+      efficientnet: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*12)).toFixed(1),
+      freq: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*18)).toFixed(1),
+      faceff: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*15)).toFixed(1),
+    },
+    signals: {
+      face: Math.random()*100,
+      freq: Math.random()*100,
+      blink: Math.random()*100,
+      gan: isFake ? 40+Math.random()*60 : Math.random()*30,
+      skin: Math.random()*100,
+      compression: Math.random()*50,
+    }
+  });
+}
+
+function addBulkScans(n) {
+  for(let i=0;i<n;i++){
+    const isFake = Math.random() > 0.45;
+    const fakeConf = isFake ? 65 + Math.random()*34 : 3 + Math.random()*28;
+    const files = ['portrait.jpg','video.mp4','selfie.png','interview.mp4','profile.jpg','speech.mp4','news.jpg','post.png','clip.mp4','face.jpg'];
+    const daysAgo = Math.floor(Math.random()*14);
+    const ts = Date.now() - daysAgo*86400000 - Math.random()*86400000;
+    scans.push({
+      id: ts + Math.random(),
+      ts,
+      file: files[Math.floor(Math.random()*files.length)],
+      type: Math.random()>.5?'IMAGE':'VIDEO',
+      verdict: isFake?'DEEPFAKE':'AUTHENTIC',
+      isFake,
+      confidence: Math.max(fakeConf,100-fakeConf).toFixed(1),
+      fakeConf: fakeConf.toFixed(1),
+      models:{
+        xception: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*14)).toFixed(1),
+        efficientnet: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*12)).toFixed(1),
+        freq: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*18)).toFixed(1),
+        faceff: Math.max(0,Math.min(100,fakeConf+(Math.random()-.5)*15)).toFixed(1),
+      },
+      signals:{face:Math.random()*100,freq:Math.random()*100,blink:Math.random()*100,gan:isFake?40+Math.random()*60:Math.random()*30,skin:Math.random()*100,compression:Math.random()*50}
+    });
+  }
+  scans.sort((a,b)=>b.ts-a.ts);
+  if(scans.length>500)scans=scans.slice(0,500);
+  saveData();
+  updateAll();
+}
+
+function clearAllData() {
+  if(!confirm('Clear all scan data?')) return;
+  scans = [];
+  saveData();
+  updateAll();
+}
+
+// ── EXPORT ──
+function exportData() {
+  if(!scans.length){alert('No data to export');return}
+  const rows = [['#','Timestamp','File','Type','Verdict','Confidence%','FakeConf%','Xception%','EfficientNet%','FreqAnalysis%','FaceFF%']];
+  scans.forEach((s,i)=>{
+    rows.push([i+1,new Date(s.ts).toLocaleString(),s.file,s.type,s.verdict,s.confidence,s.fakeConf,s.models.xception,s.models.efficientnet,s.models.freq,s.models.faceff]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `veridex-analytics-${Date.now()}.csv`;
+  a.click();
+}
+
+// ── UPDATE ALL ──
+function updateAll() {
+  updateKPIs();
+  updateTrendChart();
+  updateDonutChart();
+  updateHistChart();
+  updateRadarChart();
+  updateRiskBars();
+  updateActivity();
+  updateHistoryTable();
+}
+
+// ── KPIs ──
+function updateKPIs() {
+  const total = scans.length;
+  const fake = scans.filter(s=>s.isFake).length;
+  const real = total - fake;
+  const confs = scans.map(s=>parseFloat(s.confidence));
+  const avg = confs.length ? (confs.reduce((a,b)=>a+b,0)/confs.length).toFixed(1) : '—';
+  const max = confs.length ? Math.max(...scans.filter(s=>s.isFake).map(s=>parseFloat(s.fakeConf))).toFixed(1) : '—';
+
+  document.getElementById('kpiTotal').textContent = total;
+  document.getElementById('kpiFake').textContent = fake;
+  document.getElementById('kpiReal').textContent = real;
+  document.getElementById('kpiConf').textContent = avg === '—' ? '—' : avg+'%';
+  document.getElementById('kpiMax').textContent = max === '—' || max === '-Infinity' ? '—' : max+'%';
+  document.getElementById('kpiFakePct').textContent = total ? (fake/total*100).toFixed(1)+'% of total' : '0% of total';
+  document.getElementById('kpiRealPct').textContent = total ? (real/total*100).toFixed(1)+'% of total' : '0% of total';
+}
+
+// ── TREND CHART ──
+function updateTrendChart() {
+  const days = 14;
+  const labels = [], fakeData = [], realData = [];
+  for(let i=days-1;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const label = d.toLocaleDateString('en',{month:'short',day:'numeric'});
+    labels.push(label);
+    const dayStart = new Date(d); dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(d); dayEnd.setHours(23,59,59,999);
+    const dayScans = scans.filter(s=>s.ts>=dayStart.getTime()&&s.ts<=dayEnd.getTime());
+    fakeData.push(dayScans.filter(s=>s.isFake).length);
+    realData.push(dayScans.filter(s=>!s.isFake).length);
+  }
+  document.getElementById('trendLabel').textContent = `${scans.length} TOTAL EVENTS`;
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'DEEPFAKE',data:fakeData,backgroundColor:'rgba(255,0,60,0.6)',borderColor:'#ff003c',borderWidth:1,borderRadius:2},
+        {label:'AUTHENTIC',data:realData,backgroundColor:'rgba(57,255,20,0.4)',borderColor:'#39ff14',borderWidth:1,borderRadius:2}
+      ]
+    },
+    options:{
+      responsive:true,plugins:{legend:{labels:{color:'#3a5878',font:{family:'Share Tech Mono',size:10},boxWidth:12}},tooltip:{backgroundColor:'#040f1e',borderColor:'#0d2040',borderWidth:1,titleColor:'#00e5ff',bodyColor:'#b8d4f0',titleFont:{family:'Share Tech Mono',size:10},bodyFont:{family:'Share Tech Mono',size:10}}},
+      scales:{x:{ticks:{color:'#2a4060',font:{family:'Share Tech Mono',size:9}},grid:{color:'rgba(10,32,64,.5)'}},y:{ticks:{color:'#2a4060',font:{family:'Share Tech Mono',size:9}},grid:{color:'rgba(10,32,64,.5)'}}}
+    }
+  });
+}
+
+// ── DONUT ──
+function updateDonutChart() {
+  const fake = scans.filter(s=>s.isFake).length;
+  const real = scans.length - fake;
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['DEEPFAKE','AUTHENTIC'],
+      datasets:[{data:[fake,real],backgroundColor:['rgba(255,0,60,0.7)','rgba(57,255,20,0.6)'],borderColor:['#ff003c','#39ff14'],borderWidth:2,hoverOffset:6}]
+    },
+    options:{
+      responsive:true,cutout:'70%',
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#040f1e',borderColor:'#0d2040',borderWidth:1,titleColor:'#00e5ff',bodyColor:'#b8d4f0',titleFont:{family:'Share Tech Mono',size:10},bodyFont:{family:'Share Tech Mono',size:10}}}
+    }
+  });
+  const leg = document.getElementById('donutLegend');
+  leg.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:#ff003c;letter-spacing:1px"><div style="width:10px;height:10px;background:#ff003c;border-radius:50%"></div>DEEPFAKE: ${fake}</div>
+    <div style="display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:#39ff14;letter-spacing:1px"><div style="width:10px;height:10px;background:#39ff14;border-radius:50%"></div>AUTHENTIC: ${real}</div>
+  `;
+}
+
+// ── HISTOGRAM ──
+function updateHistChart() {
+  const buckets = Array(10).fill(0);
+  scans.forEach(s=>{
+    const idx = Math.min(9,Math.floor(parseFloat(s.confidence)/10));
+    buckets[idx]++;
+  });
+  const labels = ['0-10%','10-20%','20-30%','30-40%','40-50%','50-60%','60-70%','70-80%','80-90%','90-100%'];
+  const ctx = document.getElementById('histChart').getContext('2d');
+  if(histChart) histChart.destroy();
+  histChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{label:'SCANS',data:buckets,backgroundColor:buckets.map((_,i)=>i>=7?'rgba(255,0,60,0.6)':i>=5?'rgba(255,183,0,0.6)':'rgba(57,255,20,0.5)'),borderColor:buckets.map((_,i)=>i>=7?'#ff003c':i>=5?'#ffb700':'#39ff14'),borderWidth:1,borderRadius:2}]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#040f1e',borderColor:'#0d2040',borderWidth:1,titleColor:'#00e5ff',bodyColor:'#b8d4f0',titleFont:{family:'Share Tech Mono',size:10},bodyFont:{family:'Share Tech Mono',size:10}}},
+      scales:{x:{ticks:{color:'#2a4060',font:{family:'Share Tech Mono',size:8}},grid:{color:'rgba(10,32,64,.5)'}},y:{ticks:{color:'#2a4060',font:{family:'Share Tech Mono',size:9}},grid:{color:'rgba(10,32,64,.5)'}}}
+    }
+  });
+}
+
+// ── RADAR ──
+function updateRadarChart() {
+  const n = scans.length||1;
+  const avgModel = (key) => (scans.reduce((a,s)=>a+parseFloat(s.models[key]),0)/n).toFixed(1);
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  if(radarChart) radarChart.destroy();
+  radarChart = new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:['XCEPTION','EFFICIENTNET','FREQ. ANALYSIS','FACE FF++','ENSEMBLE'],
+      datasets:[{
+        label:'AVG SCORE',
+        data:[avgModel('xception'),avgModel('efficientnet'),avgModel('freq'),avgModel('faceff'),(scans.reduce((a,s)=>a+parseFloat(s.fakeConf),0)/n).toFixed(1)],
+        backgroundColor:'rgba(0,229,255,0.1)',borderColor:'#00e5ff',borderWidth:2,pointBackgroundColor:'#00e5ff',pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#040f1e',borderColor:'#0d2040',borderWidth:1,titleColor:'#00e5ff',bodyColor:'#b8d4f0',titleFont:{family:'Share Tech Mono',size:10},bodyFont:{family:'Share Tech Mono',size:10}}},
+      scales:{r:{ticks:{display:false},grid:{color:'rgba(10,32,64,.8)'},angleLines:{color:'rgba(10,32,64,.8)'},pointLabels:{color:'#3a5878',font:{family:'Share Tech Mono',size:9}}}}
+    }
+  });
+}
+
+// ── RISK BARS ──
+function updateRiskBars() {
+  if(!scans.length){['rb1','rb2','rb3','rb4','rb5','rb6'].forEach(id=>document.getElementById(id).style.width='0%');return}
+  const avg = key => (scans.reduce((a,s)=>a+s.signals[key],0)/scans.length).toFixed(1);
+  const keys = ['face','freq','blink','gan','skin','compression'];
+  const ids = ['rb1','rb2','rb3','rb4','rb5','rb6'];
+  const pids = ['rp1','rp2','rp3','rp4','rp5','rp6'];
+  keys.forEach((k,i)=>{
+    const v = avg(k);
+    document.getElementById(ids[i]).style.width = v+'%';
+    document.getElementById(pids[i]).textContent = v+'%';
+  });
+}
+
+// ── ACTIVITY ──
+function updateActivity() {
+  const feed = document.getElementById('activityFeed');
+  const recent = scans.slice(0,20);
+  document.getElementById('actCount').textContent = scans.length+' EVENTS';
+  if(!recent.length){
+    feed.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">NO SCANS YET — SIMULATE OR RUN REAL SCANS</div></div>';
+    return;
+  }
+  feed.innerHTML = recent.map(s=>{
+    const d = new Date(s.ts);
+    const time = d.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const date = d.toLocaleDateString('en',{month:'short',day:'numeric'});
+    return `
+      <div class="activity-item" style="padding:10px 18px">
+        <div class="act-icon ${s.isFake?'fake':'real'}">${s.isFake?'⚠️':'✅'}</div>
+        <div class="act-body">
+          <div class="act-title ${s.isFake?'fake':'real'}">${s.verdict} — ${s.file}</div>
+          <div class="act-meta">${date} ${time} · ${s.type} · CONFIDENCE: ${s.confidence}% · FAKE SCORE: ${s.fakeConf}%</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── HISTORY TABLE ──
+function filterHistory(mode) {
+  filterMode = mode;
+  ['fAll','fFake','fReal'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.borderColor='';el.style.color='';
+  });
+  const active = mode==='all'?'fAll':mode==='fake'?'fFake':'fReal';
+  document.getElementById(active).style.borderColor='var(--accent)';
+  document.getElementById(active).style.color='var(--accent)';
+  updateHistoryTable();
+}
+
+function updateHistoryTable() {
+  const filtered = filterMode==='all' ? scans : scans.filter(s=>filterMode==='fake'?s.isFake:!s.isFake);
+  const tbody = document.getElementById('historyBody');
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted2);font-family:\'Share Tech Mono\',monospace;font-size:10px;letter-spacing:2px">NO DATA</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.slice(0,100).map((s,i)=>{
+    const d = new Date(s.ts);
+    const ts = d.toLocaleDateString('en',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'});
+    const fc = parseFloat(s.fakeConf);
+    const barColor = s.isFake ? 'f' : 'r';
+    return `<tr>
+      <td style="color:var(--muted2)">${filtered.length-i}</td>
+      <td>${ts}</td>
+      <td title="${s.file}">${s.file.length>16?s.file.slice(0,14)+'..':s.file}</td>
+      <td style="color:var(--muted2)">${s.type}</td>
+      <td><span class="badge ${s.isFake?'fake':'real'}">${s.verdict}</span></td>
+      <td>
+        <div class="conf-mini">
+          <div class="conf-mini-bar"><div class="conf-mini-fill ${barColor}" style="width:${s.fakeConf}%"></div></div>
+          <span style="color:${s.isFake?'var(--accent2)':'var(--accent3)'}">${s.fakeConf}%</span>
+        </div>
+      </td>
+      <td style="color:${parseFloat(s.models.xception)>50?'var(--accent2)':'var(--accent3)'}">${s.models.xception}%</td>
+      <td style="color:${parseFloat(s.models.efficientnet)>50?'var(--accent2)':'var(--accent3)'}">${s.models.efficientnet}%</td>
+      <td style="color:${parseFloat(s.models.freq)>50?'var(--accent2)':'var(--accent3)'}">${s.models.freq}%</td>
+      <td style="color:${parseFloat(s.models.faceff)>50?'var(--accent2)':'var(--accent3)'}">${s.models.faceff}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadData();
+  updateAll();
+});
+
+// Listen for scan events from main app (if opened in same tab)
+window.addEventListener('storage', e=>{
+  if(e.key===STORE_KEY){loadData();updateAll()}
+});
+</script>
+</body>
+</html>
