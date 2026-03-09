@@ -2,559 +2,649 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERIDEX — AI Deepfake Detection System</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — AI Deepfake Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-[data-theme="dark"]{--bg:#030810;--panel:#080f1e;--border:#0d2040;--accent:#00e5ff;--accent2:#ff003c;--accent3:#39ff14;--warn:#ffb700;--text:#b8d4f0;--muted:#3a5475;--grid:rgba(0,229,255,0.03);--scanline:rgba(0,0,0,0.07);--upload-bg:rgba(0,229,255,0.01);--upload-hover:rgba(0,229,255,0.05);--shadow:0 4px 32px rgba(0,0,0,0.6)}
-[data-theme="light"]{--bg:#eef3ff;--panel:#fff;--border:#ccd9f0;--accent:#0066cc;--accent2:#cc0030;--accent3:#1a8800;--warn:#bb7700;--text:#1a2a4a;--muted:#7090bb;--grid:rgba(0,100,200,0.04);--scanline:rgba(0,0,0,0);--upload-bg:rgba(0,102,204,0.02);--upload-hover:rgba(0,102,204,0.06);--shadow:0 4px 24px rgba(0,40,120,0.1)}
-[data-theme="light"] body::before{display:none}
-[data-theme="light"] .logo-mark,.hero-title{animation:none!important}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scanline) 2px,var(--scanline) 4px)}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:40px 40px}
+/* ═══ TOKENS ═══ */
+:root {
+  --bg: #03070f;
+  --bg2: #060c18;
+  --bg3: #0a1220;
+  --border: rgba(0,210,255,0.10);
+  --border2: rgba(0,210,255,0.22);
+  --c: #00d2ff;
+  --c2: #ff1f4e;
+  --c3: #00ff88;
+  --warn: #ffb700;
+  --text: #c5ddf5;
+  --muted: #2d4a68;
+  --muted2: #4a6880;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'Rajdhani', sans-serif;
+  --mono: 'Share Tech Mono', monospace;
+}
+[data-theme="light"] {
+  --bg: #eef3fc;
+  --bg2: #f8faff;
+  --bg3: #fff;
+  --border: rgba(0,140,200,0.12);
+  --border2: rgba(0,140,200,0.25);
+  --c: #0088cc;
+  --text: #0d1e38;
+  --muted: #b0c4d8;
+  --muted2: #7090aa;
+}
 
-/* HERO */
-.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px 80px;background:radial-gradient(ellipse 100% 60% at 50% 50%,rgba(0,120,200,0.12) 0%,transparent 70%)}
-.hero-badge{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--accent);border:1px solid var(--accent);padding:7px 18px;margin-bottom:36px;animation:fadeUp .8s ease both;box-shadow:0 0 20px rgba(0,229,255,0.15)}
-.hero-title{font-family:'Orbitron',monospace;font-size:clamp(48px,12vw,110px);font-weight:900;letter-spacing:8px;color:var(--accent);text-shadow:0 0 50px rgba(0,229,255,0.5),0 0 100px rgba(0,229,255,0.2);animation:fadeUp .8s .1s ease both,glitch 8s 3s infinite;line-height:1;margin-bottom:18px}
-@keyframes glitch{0%,94%,100%{text-shadow:0 0 50px rgba(0,229,255,0.5),0 0 100px rgba(0,229,255,0.2)}95%{text-shadow:-3px 0 rgba(255,0,60,.9),3px 0 rgba(0,229,255,.9)}96%{text-shadow:3px 0 rgba(255,0,60,.9),-3px 0 rgba(0,229,255,.9)}}
-.hero-sub{font-family:'Share Tech Mono',monospace;font-size:clamp(9px,2vw,13px);letter-spacing:4px;color:var(--muted);margin-bottom:52px;animation:fadeUp .8s .2s ease both}
-.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;animation:fadeUp .8s .3s ease both}
-.hero-stat{text-align:center}
-.hero-stat-val{font-family:'Orbitron',monospace;font-size:clamp(24px,4vw,36px);font-weight:900;color:var(--accent);display:block}
-.hero-stat-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:4px}
-.hero-div{width:1px;height:44px;background:var(--border);align-self:center}
-.hero-cta{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .4s ease both}
-.btn-hero{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .25s;text-transform:uppercase;text-decoration:none;border:none}
-.btn-hero.primary{background:var(--accent);color:#000;box-shadow:0 0 30px rgba(0,229,255,0.4)}
-.btn-hero.primary:hover{box-shadow:0 0 50px rgba(0,229,255,0.7);transform:translateY(-2px)}
-.btn-hero.outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.btn-hero.outline:hover{background:rgba(0,229,255,0.08);box-shadow:0 0 20px rgba(0,229,255,0.2)}
-.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:3px;animation:bounce 2s infinite}
-@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
-.scroll-arr{width:18px;height:18px;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin-top:-4px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+/* ═══ BASE ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  overflow-x: hidden;
+  transition: background .35s, color .35s;
+}
+::selection { background: rgba(0,210,255,.2); color: var(--c); }
 
-/* TECH STRIP */
-.tech-strip{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--panel);padding:18px 0;overflow:hidden}
-.tech-inner{display:flex;gap:48px;animation:scrollx 22s linear infinite;width:max-content;padding:0 24px}
-@keyframes scrollx{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tech-item{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;white-space:nowrap;display:flex;align-items:center;gap:10px}
-.tdot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);flex-shrink:0}
+/* ═══ CANVAS BACKGROUND ═══ */
+#bgc {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; opacity: .5;
+}
 
-/* FEATURES */
-.section{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:80px 24px}
-.section-title{font-family:'Orbitron',monospace;font-size:clamp(16px,3vw,24px);font-weight:700;color:var(--accent);letter-spacing:4px;text-align:center;margin-bottom:8px}
-.section-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-align:center;margin-bottom:48px}
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--border)}
-.feature-card{background:var(--panel);padding:32px 24px;transition:background .2s;position:relative;overflow:hidden}
-.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
-.feature-card:hover{background:rgba(0,229,255,0.02)}
-.feature-card:hover::before{opacity:1}
-.fi{font-size:28px;margin-bottom:16px;display:block}
-.ft{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:10px}
-.fd{font-size:15px;color:var(--muted);line-height:1.5}
+/* ═══ TOPNAV ═══ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 62px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: rgba(3,7,15,.75);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  transition: background .35s;
+}
+[data-theme="light"] nav { background: rgba(238,243,252,.82); }
+.nav-logo {
+  font-family: var(--display);
+  font-size: 22px; letter-spacing: 7px; color: var(--c);
+  text-shadow: 0 0 24px rgba(0,210,255,.5);
+  text-decoration: none;
+}
+.nav-center {
+  display: flex; gap: 36px;
+}
+.nav-center a {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 3px;
+  color: var(--muted2); text-decoration: none; transition: color .2s;
+}
+.nav-center a:hover { color: var(--c); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.tbtn {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  padding: 7px 16px; border: 1px solid var(--border2); color: var(--muted2);
+  background: none; cursor: pointer; text-decoration: none;
+  transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.tbtn:hover { border-color: var(--c); color: var(--c); }
+.tbtn.primary {
+  background: var(--c); color: #000; border-color: var(--c);
+  font-weight: 700;
+}
+.tbtn.primary:hover { box-shadow: 0 0 24px rgba(0,210,255,.45); transform: translateY(-1px); }
+.theme-toggle {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border2); background: none;
+  color: var(--muted2); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.theme-toggle:hover { border-color: var(--c); color: var(--c); }
+.hbg {
+  display: none; flex-direction: column; gap: 4px;
+  background: none; border: none; cursor: pointer; padding: 5px;
+}
+.hbg span { display: block; width: 20px; height: 1px; background: var(--muted2); transition: .3s; }
+.mob-menu {
+  display: none; position: fixed; top: 62px; left: 0; right: 0; z-index: 199;
+  flex-direction: column; gap: 0;
+  background: rgba(3,7,15,.97); backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+.mob-menu.on { display: flex; }
+.mob-menu a {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  color: var(--muted2); padding: 16px 28px;
+  border-bottom: 1px solid var(--border); text-decoration: none; transition: color .2s;
+}
+.mob-menu a:hover { color: var(--c); }
 
-/* DETECTOR */
-.det-section{position:relative;z-index:1;background:var(--panel);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.det-inner{max-width:1200px;margin:0 auto;padding:60px 24px}
-.det-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.det-title-block{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.det-title{font-family:'Orbitron',monospace;font-size:clamp(14px,3vw,20px);font-weight:900;color:var(--accent);letter-spacing:4px}
-.det-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px}
-.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.status-pill{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent3);letter-spacing:2px}
-.sdot{width:7px;height:7px;border-radius:50%;background:var(--accent3);box-shadow:0 0 8px var(--accent3);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.lang-sel{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 12px;cursor:pointer;outline:none;transition:border .2s}
-.lang-sel:hover{border-color:var(--accent)}
-.theme-btn{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 14px;cursor:pointer;transition:all .2s}
-.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
-.ttrack{width:30px;height:16px;background:var(--border);border-radius:8px;position:relative;transition:background .3s}
-[data-theme="light"] .ttrack{background:var(--accent)}
-.tthumb{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--muted);transition:all .3s}
-[data-theme="light"] .tthumb{left:16px;background:#fff}
+/* ═══ HERO ═══ */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 100px 24px 80px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 4px; color: var(--c);
+  border: 1px solid rgba(0,210,255,.22); padding: 7px 20px;
+  background: rgba(0,210,255,.04); margin-bottom: 36px;
+  animation: riseIn .7s ease both;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c); box-shadow: 0 0 8px var(--c); animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-/* GRID */
-.main-grid{display:grid;grid-template-columns:1fr 310px;gap:18px}
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(80px, 14vw, 180px);
+  line-height: .88; letter-spacing: 10px;
+  margin-bottom: 28px;
+  animation: riseIn .7s .1s ease both;
+}
+.ht-glow {
+  display: block; color: var(--c);
+  text-shadow: 0 0 60px rgba(0,210,255,.55), 0 0 120px rgba(0,210,255,.2);
+}
+.ht-sub {
+  display: block; color: var(--text); opacity: .15;
+  font-size: clamp(28px,4vw,52px); letter-spacing: 22px;
+  margin-top: 8px;
+}
 
-/* PANELS */
-.panel{background:var(--bg);border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:var(--shadow)}
-[data-theme="light"] .panel{background:var(--panel)}
-.panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.4}
-.ph{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border)}
-.ph-title{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--accent)}
-.phdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
-.tab-row{display:flex;margin:0 14px;border-bottom:1px solid var(--border)}
-.tab{padding:8px 16px;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.upload-zone{margin:14px;border:1px dashed var(--muted);padding:36px 18px;text-align:center;cursor:pointer;transition:all .3s;background:var(--upload-bg);position:relative}
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--upload-hover);box-shadow:inset 0 0 40px rgba(0,229,255,0.04),0 0 16px rgba(0,229,255,.1)}
-.upload-zone::after{content:'';position:absolute;inset:7px;border:1px dashed rgba(0,229,255,.07);pointer-events:none}
-.upload-icon svg{width:50px;height:50px;stroke:var(--accent);opacity:.7;filter:drop-shadow(0 0 8px rgba(0,229,255,.35));display:block;margin:0 auto 14px}
-.upload-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:5px}
-.upload-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:18px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;overflow:hidden}
-.btn::before{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:.2s}
-.btn:hover::before{opacity:.09}
-.btn:hover{box-shadow:0 0 16px rgba(0,229,255,.3)}
-.btn.danger{border-color:var(--accent2);color:var(--accent2)}
-.btn.danger::before{background:var(--accent2)}
-.btn.danger:hover{box-shadow:0 0 16px rgba(255,0,60,.3)}
-.btn.sharebtn{border-color:var(--warn);color:var(--warn)}
-.btn.sharebtn::before{background:var(--warn)}
-.btn.sharebtn:hover{box-shadow:0 0 16px rgba(255,183,0,.3)}
-.preview-area{margin:14px;display:none}
-.preview-area.active{display:block}
-.preview-frame{border:1px solid var(--border);background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;margin-bottom:12px}
-.preview-frame img,.preview-frame video{max-width:100%;max-height:100%;object-fit:contain}
-.scan-overlay{position:absolute;inset:0;pointer-events:none;display:none}
-.scan-overlay.active{display:block}
-.sline{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 10px var(--accent);animation:scandown 2s linear infinite}
-@keyframes scandown{0%{top:0}100%{top:100%}}
-.corner{position:absolute;width:14px;height:14px}
-.corner.tl{top:7px;left:7px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)}
-.corner.tr{top:7px;right:7px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)}
-.corner.bl{bottom:7px;left:7px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)}
-.corner.br{bottom:7px;right:7px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)}
-.action-row{display:flex;gap:8px;flex-wrap:wrap}
-.analyzing-state{display:none;text-align:center;padding:32px 18px}
-.analyzing-state.active{display:block}
-.aspinner{width:52px;height:52px;margin:0 auto 14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.atext{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px}
-.asub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:6px}
-.results-section{margin:14px;display:none}
-.results-section.active{display:block}
-.verdict-box{padding:18px;border:1px solid var(--border);margin-bottom:14px;text-align:center}
-.verdict-box.real{border-color:var(--accent3);box-shadow:0 0 24px rgba(57,255,20,.08)}
-.verdict-box.fake{border-color:var(--accent2);box-shadow:0 0 24px rgba(255,0,60,.12)}
-.verdict-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:6px}
-.verdict-text{font-family:'Orbitron',monospace;font-size:clamp(20px,4vw,30px);font-weight:900;letter-spacing:4px}
-.verdict-text.real{color:var(--accent3);text-shadow:0 0 16px rgba(57,255,20,.5)}
-.verdict-text.fake{color:var(--accent2);text-shadow:0 0 16px rgba(255,0,60,.5)}
-.cblock{margin-bottom:12px}
-.crow{display:flex;justify-content:space-between;margin-bottom:4px}
-.clabel{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)}
-.cpct{font-family:'Orbitron',monospace;font-size:11px;font-weight:700}
-.cbar{height:5px;background:var(--border);overflow:hidden}
-.cfill{height:100%;transition:width 1.5s cubic-bezier(.16,1,.3,1)}
-.cfill.fake-fill{background:linear-gradient(90deg,#ff003c,#ff6b8a);box-shadow:0 0 8px rgba(255,0,60,.5)}
-.cfill.real-fill{background:linear-gradient(90deg,#39ff14,#7fff5f);box-shadow:0 0 8px rgba(57,255,20,.5)}
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:14px}
-.mcell{background:var(--bg);padding:10px 12px}
-[data-theme="light"] .mcell{background:var(--panel)}
-.mname{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:3px}
-.mval{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--text)}
-.mval.flag{color:var(--warn)}.mval.safe{color:var(--accent3)}.mval.danger{color:var(--accent2)}
-.sidebar{display:flex;flex-direction:column;gap:16px}
-.threat-wrap{padding:16px 18px}
-.rsvg{width:100px;height:100px;transform:rotate(-90deg)}
-.rbg{fill:none;stroke:var(--border);stroke-width:8}
-.rfill{fill:none;stroke-width:8;stroke-linecap:butt;transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1),stroke .5s}
-.rwrap{position:relative;width:100px;height:100px}
-.rtext{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--accent);text-align:center}
-.rsub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-align:center}
-.mbadges{padding:10px 14px;display:flex;flex-direction:column;gap:6px}
-.mbadge{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--upload-bg);border:1px solid var(--border);border-left:2px solid var(--accent)}
-.mbn{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text)}
-.mbs{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--accent2)}
-.mbs.safe{color:var(--accent3)}
-.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)}
-.slabel{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted)}
-.sval{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent)}
-.loglist{padding:8px;max-height:150px;overflow-y:auto;background:var(--bg)}
-[data-theme="light"] .loglist{background:#f5f8ff}
-.loglist::-webkit-scrollbar{width:3px}
-.loglist::-webkit-scrollbar-thumb{background:var(--muted)}
-.lentry{display:flex;gap:8px;padding:4px 6px;border-bottom:1px solid rgba(13,32,64,.2);animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
-.ltime{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap}
-.lmsg{font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.5}
-.lmsg.ok{color:var(--accent3)}.lmsg.warn{color:var(--warn)}.lmsg.err{color:var(--accent2)}.lmsg.info{color:var(--accent)}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.active{display:flex}
-.modal{background:var(--panel);border:1px solid var(--accent);max-width:460px;width:100%;padding:28px;position:relative;box-shadow:0 0 40px rgba(0,229,255,.2);animation:modalIn .3s}
-@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-.modal-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:18px}
-.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
-.modal-close:hover{color:var(--accent2)}
-.src{background:var(--bg);border:1px solid var(--border);padding:14px;margin-bottom:14px}
-.srr{display:flex;justify-content:space-between;margin-bottom:7px}
-.srr:last-child{margin:0}
-.srl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted)}
-.srv{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--text)}
-.clink-row{display:flex;gap:8px;margin-bottom:14px}
-.cinput{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;padding:8px 10px;outline:none}
-.sbtns{display:flex;gap:8px;flex-wrap:wrap}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--panel);border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:12px 24px;z-index:999999;transition:transform .3s;pointer-events:none;box-shadow:0 0 20px rgba(0,229,255,.2)}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.site-footer{position:relative;z-index:1;background:var(--panel);border-top:1px solid var(--border);padding:48px 24px;text-align:center}
-.flogo{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--accent);letter-spacing:4px;margin-bottom:10px}
-.ftagline{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:24px}
-.flinks{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:24px}
-.flink{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-decoration:none;transition:color .2s;cursor:pointer}
-.flink:hover{color:var(--accent)}
-.fcopy{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px}
-#fileInput{display:none}
-@media(max-width:860px){.main-grid{grid-template-columns:1fr}.sidebar{flex-direction:row;flex-wrap:wrap}.sidebar .panel{flex:1;min-width:240px}}
-@media(max-width:560px){.det-inner{padding:40px 14px}.hero{padding:60px 16px 80px}.features-grid{grid-template-columns:1fr}.action-row{flex-direction:column}.btn{justify-content:center}.mgrid{grid-template-columns:1fr}.sidebar{flex-direction:column}.sidebar .panel{min-width:unset}.hero-div{display:none}.sbtns{flex-direction:column}.hero-stats{gap:24px}}
+.hero-desc {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  color: var(--muted2); line-height: 2.1; max-width: 500px;
+  margin-bottom: 48px; animation: riseIn .7s .2s ease both;
+}
+
+.hero-stats {
+  display: flex; gap: 0; margin-bottom: 52px;
+  animation: riseIn .7s .3s ease both;
+  border: 1px solid var(--border);
+}
+.hstat {
+  padding: 18px 36px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.hstat:last-child { border-right: none; }
+.hstat-n {
+  font-family: var(--display); font-size: 40px; letter-spacing: 2px; color: var(--c);
+  line-height: 1;
+}
+.hstat-l {
+  font-family: var(--mono); font-size: 7px; letter-spacing: 3px;
+  color: var(--muted2); margin-top: 4px;
+}
+
+.hero-ctas {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  animation: riseIn .7s .4s ease both;
+}
+.cta-main {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px; font-weight: 700;
+  padding: 14px 40px; background: var(--c); color: #000; border: none;
+  cursor: pointer; transition: all .25s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.cta-main:hover { box-shadow: 0 0 32px rgba(0,210,255,.5); transform: translateY(-2px); }
+.cta-sec {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  padding: 14px 32px; background: none; color: var(--text);
+  border: 1px solid var(--muted); cursor: pointer; transition: all .25s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+}
+.cta-sec:hover { border-color: var(--c2); color: var(--c2); }
+
+.scroll-cue {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 7px; letter-spacing: 3px; color: var(--muted);
+  animation: riseIn 1s 1s ease both;
+}
+.scroll-line {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, var(--c), transparent);
+  animation: scrollDown 1.8s ease-in-out infinite;
+}
+@keyframes scrollDown { 0%,100%{opacity:.8;transform:scaleY(1)} 50%{opacity:.2;transform:scaleY(1.4)} }
+
+/* ═══ TICKER ═══ */
+.ticker {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: var(--bg2); height: 40px; overflow: hidden;
+  display: flex; align-items: center;
+}
+.ticker-track {
+  display: flex; width: max-content;
+  animation: ticker 28s linear infinite;
+}
+.ticker-item {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 3px;
+  color: var(--muted2); padding: 0 36px;
+  border-right: 1px solid var(--muted); white-space: nowrap;
+}
+.ticker-item em { color: var(--c); font-style: normal; }
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ═══ SECTION SHELL ═══ */
+.sec {
+  position: relative; z-index: 1;
+  max-width: 1160px; margin: 0 auto;
+  padding: 100px 48px;
+}
+.sec-tag {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 5px;
+  color: var(--c); margin-bottom: 10px; display: block;
+}
+.sec-title {
+  font-family: var(--display); font-size: clamp(36px,5vw,68px);
+  letter-spacing: 5px; line-height: 1; margin-bottom: 14px;
+}
+.sec-sub {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  color: var(--muted2); line-height: 1.9; max-width: 500px;
+}
+
+/* ═══ HOW IT WORKS ═══ */
+.steps-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1px; background: var(--muted); margin-top: 60px;
+}
+.step-card {
+  background: var(--bg2); padding: 32px 24px;
+  position: relative; overflow: hidden; transition: background .2s;
+}
+.step-card:hover { background: var(--bg3); }
+.step-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--c), transparent);
+  opacity: 0; transition: .3s;
+}
+.step-card:hover::after { opacity: 1; }
+.step-n {
+  font-family: var(--display); font-size: 64px; letter-spacing: 2px;
+  color: rgba(0,210,255,.06); position: absolute; bottom: 8px; right: 12px;
+}
+.step-icon { font-size: 26px; margin-bottom: 14px; }
+.step-title {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  color: var(--c); margin-bottom: 10px;
+}
+.step-body { font-family: var(--body); font-size: 13px; color: var(--muted2); line-height: 1.7; }
+
+/* ═══ FEATURES / SIGNALS ═══ */
+.signals-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap: 16px; margin-top: 60px;
+}
+.sig-card {
+  border: 1px solid var(--border); padding: 26px 22px;
+  position: relative; overflow: hidden; transition: all .25s;
+  background: rgba(0,210,255,.01);
+}
+.sig-card:hover {
+  border-color: var(--c); background: rgba(0,210,255,.03);
+  transform: translateY(-2px);
+}
+.sig-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c), transparent);
+  opacity: 0; transition: .3s;
+}
+.sig-card:hover::before { opacity: 1; }
+.sig-num {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  color: var(--muted); margin-bottom: 8px;
+}
+.sig-icon { font-size: 20px; margin-bottom: 10px; }
+.sig-title {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  color: var(--c); margin-bottom: 8px;
+}
+.sig-body { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+
+/* ═══ LIVE DEMO PREVIEW ═══ */
+.demo-wrap {
+  position: relative; z-index: 1;
+  max-width: 1160px; margin: 0 auto; padding: 0 48px 100px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+.demo-text .sec-title { font-size: clamp(28px,4vw,52px); }
+.demo-panel {
+  border: 1px solid var(--border2); background: var(--bg2); padding: 28px;
+  position: relative;
+}
+.demo-panel::before {
+  content: 'LIVE EXAMPLE'; position: absolute; top: -1px; left: 24px;
+  font-family: var(--mono); font-size: 7px; letter-spacing: 3px;
+  background: var(--c); color: #000; padding: 3px 10px;
+}
+.demo-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.demo-label { font-family: var(--mono); font-size: 7px; letter-spacing: 1px; color: var(--muted2); width: 124px; flex-shrink: 0; }
+.demo-bar { flex: 1; height: 3px; background: rgba(255,255,255,.05); overflow: hidden; }
+.demo-fill { height: 100%; border-radius: 0; }
+.demo-pct { font-family: var(--mono); font-size: 8px; width: 32px; text-align: right; }
+.verdict-big {
+  margin-top: 20px; padding: 16px; text-align: center;
+  border: 1px solid rgba(255,31,78,.3); background: rgba(255,31,78,.04);
+}
+.vb-eyebrow { font-family: var(--mono); font-size: 7px; letter-spacing: 3px; color: var(--muted2); margin-bottom: 6px; }
+.vb-word {
+  font-family: var(--display); font-size: 36px; letter-spacing: 6px; color: var(--c2);
+  text-shadow: 0 0 24px rgba(255,31,78,.45);
+}
+
+/* ═══ FOOTER ═══ */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border);
+  background: var(--bg2); padding: 48px;
+  display: flex; flex-wrap: wrap; gap: 32px;
+  align-items: flex-start; justify-content: space-between;
+}
+.foot-brand { flex: 1; min-width: 200px; }
+.foot-logo {
+  font-family: var(--display); font-size: 22px; letter-spacing: 7px; color: var(--c);
+  margin-bottom: 8px;
+}
+.foot-tag {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  color: var(--muted2); line-height: 1.9; max-width: 300px;
+}
+.foot-nav { display: flex; flex-direction: column; gap: 12px; }
+.foot-nav a {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  color: var(--muted2); text-decoration: none; transition: color .2s;
+}
+.foot-nav a:hover { color: var(--c); }
+.foot-copy {
+  width: 100%; font-family: var(--mono); font-size: 7px;
+  letter-spacing: 2px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 24px;
+}
+
+/* ═══ ANIMS ═══ */
+@keyframes riseIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:960px) {
+  nav { padding: 0 20px; }
+  .nav-center { display: none; }
+  .tbtn.primary { display: none; }
+  .hbg { display: flex; }
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .demo-wrap { grid-template-columns: 1fr; gap: 36px; padding: 0 20px 80px; }
+  .sec { padding: 80px 20px; }
+  footer { padding: 32px 20px; }
+}
+@media(max-width:580px) {
+  .hero-stats { flex-wrap: wrap; border: none; gap: 20px; }
+  .hstat { border: 1px solid var(--border); padding: 14px 24px; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .cta-main, .cta-sec { justify-content: center; }
+}
 </style>
 </head>
 <body>
+<canvas id="bgc"></canvas>
 
-<!-- HERO -->
-<section class="hero" id="home">
-  <div class="hero-badge" data-i18n="badge">⬡ AI-POWERED DEEPFAKE DETECTION SYSTEM ⬡</div>
-  <div class="hero-title">VERIDEX</div>
-  <div class="hero-sub" data-i18n="hero_sub">NEURAL AUTHENTICITY ENGINE — BUILT FOR TRUTH</div>
+<!-- ─── NAV ─── -->
+<nav>
+  <a href="index.html" class="nav-logo">VERIDEX</a>
+  <div class="nav-center">
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#signals">SIGNALS</a>
+    <a href="dashboard.html">DASHBOARD</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+    <a href="engine.html" class="tbtn primary">▶ DETECT NOW</a>
+    <button class="hbg" id="hbg" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="mob-menu" id="mobMenu">
+  <a href="#how">HOW IT WORKS</a>
+  <a href="#signals">SIGNALS</a>
+  <a href="dashboard.html">📊 DASHBOARD</a>
+  <a href="engine.html">▶ DETECT NOW</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-badge">⬡ NEURAL FORENSIC ENGINE V5</div>
+  <h1 class="hero-title">
+    <span class="ht-glow">VERIDEX</span>
+    <span class="ht-sub">AI DETECTOR</span>
+  </h1>
+  <p class="hero-desc">REAL-TIME DEEPFAKE DETECTION · 10 FORENSIC SIGNALS<br>100% BROWSER-SIDE · NO SERVER · NO DATA STORED</p>
+
   <div class="hero-stats">
-    <div class="hero-stat"><span class="hero-stat-val">99.2%</span><span class="hero-stat-label" data-i18n="accuracy">ACCURACY</span></div>
-    <div class="hero-div"></div>
-    <div class="hero-stat"><span class="hero-stat-val">4</span><span class="hero-stat-label" data-i18n="ai_models">AI MODELS</span></div>
-    <div class="hero-div"></div>
-    <div class="hero-stat"><span class="hero-stat-val">&lt;5s</span><span class="hero-stat-label" data-i18n="analysis_time">ANALYSIS TIME</span></div>
-    <div class="hero-div"></div>
-    <div class="hero-stat"><span class="hero-stat-val">6</span><span class="hero-stat-label" data-i18n="languages">LANGUAGES</span></div>
+    <div class="hstat"><div class="hstat-n">10</div><div class="hstat-l">FORENSIC SIGNALS</div></div>
+    <div class="hstat"><div class="hstat-n">99%</div><div class="hstat-l">ACCURACY TARGET</div></div>
+    <div class="hstat"><div class="hstat-n">&lt;3S</div><div class="hstat-l">ANALYSIS TIME</div></div>
+    <div class="hstat"><div class="hstat-n">0</div><div class="hstat-l">SERVER NEEDED</div></div>
   </div>
-  <div class="hero-cta">
-    <a class="btn-hero primary" href="#detector" onclick="smoothScroll(event,'detector')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <span data-i18n="start_detection">START DETECTION</span>
+
+  <div class="hero-ctas">
+    <a href="engine.html" class="cta-main">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      DETECT AN IMAGE
     </a>
-    <a class="btn-hero outline" href="#features" onclick="smoothScroll(event,'features')">
-      <span data-i18n="learn_more">LEARN MORE</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
-    <a class="btn-hero outline" href="dashboard.html">
-      <a class="btn-hero outline" href="engine.html" style="border-color:#9d00ff;color:#9d00ff">
-  🧠 REAL ENGINE
-</a>
-  📊 ANALYTICS
-</a>
+    <a href="dashboard.html" class="cta-sec">📊 VIEW DASHBOARD</a>
+    <a href="#how" class="cta-sec">HOW IT WORKS ↓</a>
   </div>
-  <div class="scroll-hint"><span data-i18n="scroll_down">SCROLL DOWN</span><div class="scroll-arr"></div></div>
+
+  <div class="scroll-cue">
+    <span>SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
 </section>
 
-<!-- TECH STRIP -->
-<div class="tech-strip">
-  <div class="tech-inner">
-    <div class="tech-item"><div class="tdot"></div>TENSORFLOW</div><div class="tech-item"><div class="tdot"></div>PYTORCH</div><div class="tech-item"><div class="tdot"></div>XCEPTION CNN</div><div class="tech-item"><div class="tdot"></div>EFFICIENTNET-B7</div><div class="tech-item"><div class="tdot"></div>FACE FORENSICS++</div><div class="tech-item"><div class="tdot"></div>FLASK API</div><div class="tech-item"><div class="tdot"></div>REACT FRONTEND</div><div class="tech-item"><div class="tdot"></div>AWS CLOUD</div><div class="tech-item"><div class="tdot"></div>GAN DETECTION</div><div class="tech-item"><div class="tdot"></div>FFT ANALYSIS</div>
-    <div class="tech-item"><div class="tdot"></div>TENSORFLOW</div><div class="tech-item"><div class="tdot"></div>PYTORCH</div><div class="tech-item"><div class="tdot"></div>XCEPTION CNN</div><div class="tech-item"><div class="tdot"></div>EFFICIENTNET-B7</div><div class="tech-item"><div class="tdot"></div>FACE FORENSICS++</div><div class="tech-item"><div class="tdot"></div>FLASK API</div><div class="tech-item"><div class="tdot"></div>REACT FRONTEND</div><div class="tech-item"><div class="tdot"></div>AWS CLOUD</div><div class="tech-item"><div class="tdot"></div>GAN DETECTION</div><div class="tech-item"><div class="tdot"></div>FFT ANALYSIS</div>
-  </div>
+<!-- ─── TICKER ─── -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack"></div>
 </div>
 
-<!-- FEATURES -->
-<div id="features">
-<div class="section">
-  <div class="section-title" data-i18n="how_it_works">HOW IT WORKS</div>
-  <div class="section-sub" data-i18n="how_sub">MULTI-MODEL ENSEMBLE DETECTION PIPELINE</div>
-  <div class="features-grid">
-    <div class="feature-card"><span class="fi">🧠</span><div class="ft" data-i18n="f1_title">NEURAL ANALYSIS</div><div class="fd" data-i18n="f1_desc">Xception & EfficientNet-B7 CNNs analyze pixel-level patterns, facial geometry, and blending artifacts with 99.2% accuracy.</div></div>
-    <div class="feature-card"><span class="fi">🌊</span><div class="ft" data-i18n="f2_title">FREQUENCY FORENSICS</div><div class="fd" data-i18n="f2_desc">FFT & DCT analysis detects invisible GAN fingerprints and spectral anomalies that reveal synthetic media generation.</div></div>
-    <div class="feature-card"><span class="fi">👁️</span><div class="ft" data-i18n="f3_title">FACE FORENSICS++</div><div class="fd" data-i18n="f3_desc">Landmark detection analyzes eye blink patterns, skin texture consistency, and facial boundary irregularities frame by frame.</div></div>
-    <div class="feature-card"><span class="fi">⚖️</span><div class="ft" data-i18n="f4_title">ENSEMBLE VERDICT</div><div class="fd" data-i18n="f4_desc">All 4 models vote with weighted confidence scores to produce a final tamper-proof verdict with full forensic breakdown.</div></div>
-  </div>
-</div>
-</div>
-
-<!-- DETECTOR -->
-<div class="det-section" id="detector">
-<div class="det-inner">
-  <div class="det-topbar">
-    <div class="det-title-block">
-      <div class="det-title">DETECTION ENGINE</div>
-      <div class="det-sub" data-i18n="engine_sub">UPLOAD · ANALYZE · VERIFY</div>
+<!-- ─── HOW IT WORKS ─── -->
+<div id="how" class="sec">
+  <span class="sec-tag">PROCESS</span>
+  <h2 class="sec-title">HOW IT WORKS</h2>
+  <p class="sec-sub">Upload any image. Our forensic engine runs 10 parallel signal analyses and delivers a verdict in under 3 seconds.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-n">01</div>
+      <div class="step-icon">📤</div>
+      <div class="step-title">UPLOAD MEDIA</div>
+      <div class="step-body">Drop any image — portrait, news photo, social post. PNG, JPG, WEBP supported. Fully browser-side, nothing leaves your device.</div>
     </div>
-    <div class="topbar-right">
-      <div class="status-pill"><div class="sdot"></div><span data-i18n="online">ONLINE</span></div>
-      <select class="lang-sel" onchange="setLanguage(this.value)">
-        <option value="en">🌐 English</option>
-        <option value="hi">🇮🇳 हिंदी</option>
-        <option value="te">🇮🇳 తెలుగు</option>
-        <option value="ar">🇸🇦 العربية</option>
-        <option value="fr">🇫🇷 Français</option>
-        <option value="es">🇪🇸 Español</option>
-      </select>
-      <button class="theme-btn" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span>
-        <div class="ttrack"><div class="tthumb"></div></div>
-        <span id="themeLabel" data-i18n="dark_mode">DARK</span>
-      </button>
+    <div class="step-card">
+      <div class="step-n">02</div>
+      <div class="step-icon">🧠</div>
+      <div class="step-title">10-SIGNAL SCAN</div>
+      <div class="step-body">Pixel noise, FFT spectral, ELA compression, skin texture, color histogram, hand anatomy, lighting physics, background coherence, text & geometry run in parallel.</div>
     </div>
-  </div>
-
-  <div class="main-grid">
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <!-- UPLOAD -->
-      <div class="panel">
-        <div class="ph"><div class="phdot"></div><div class="ph-title" data-i18n="media_input">Media Input</div></div>
-        <div class="tab-row">
-          <div class="tab active" onclick="switchTab(this)" data-i18n="tab_image">IMAGE</div>
-          <div class="tab" onclick="switchTab(this)" data-i18n="tab_video">VIDEO</div>
-          <div class="tab" onclick="switchTab(this)" data-i18n="tab_batch">BATCH</div>
-        </div>
-        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-          <div class="upload-icon">
-            <svg viewBox="0 0 64 64" fill="none" stroke-width="1.5"><rect x="4" y="12" width="56" height="40" rx="2"/><circle cx="20" cy="28" r="6"/><path d="M4 40 L20 26 L34 36 L44 26 L60 40"/><path d="M32 4 L32 12 M28 8 L32 4 L36 8"/></svg>
-          </div>
-          <div class="upload-title" data-i18n="drop_media">DROP MEDIA FILE</div>
-          <div class="upload-sub" data-i18n="file_types">PNG · JPG · MP4 · MOV · MAX 500MB</div>
-          <button class="btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            <span data-i18n="select_file">SELECT FILE</span>
-          </button>
-        </div>
-        <input type="file" id="fileInput" accept="image/*,video/*" onchange="handleFile(this)">
-        <div class="preview-area" id="previewArea">
-          <div class="preview-frame">
-            <img id="previewImg" src="" alt="" style="display:none">
-            <video id="previewVid" controls style="display:none;max-width:100%"></video>
-            <div class="scan-overlay" id="scanOverlay">
-              <div class="sline"></div>
-              <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-            </div>
-          </div>
-          <div class="action-row">
-            <button class="btn" onclick="startAnalysis()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-              <span data-i18n="run_analysis">RUN ANALYSIS</span>
-            </button>
-            <button class="btn danger" onclick="resetAll()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 3v6h6"/></svg>
-              <span data-i18n="reset">RESET</span>
-            </button>
-          </div>
-        </div>
-        <div class="analyzing-state" id="analyzingState">
-          <div class="aspinner"></div>
-          <div class="atext" id="analyzeStep" data-i18n="initializing">INITIALIZING MODELS</div>
-          <div class="asub" id="analyzeProgress">Xception · EfficientNet · FaceForensics++</div>
-        </div>
-      </div>
-
-      <!-- RESULTS -->
-      <div class="panel">
-        <div class="ph"><div class="phdot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2)"></div><div class="ph-title" data-i18n="analysis_results">Analysis Results</div></div>
-        <div class="results-section" id="resultsSection">
-          <div class="verdict-box" id="verdictBox">
-            <div class="verdict-label" data-i18n="classification">CLASSIFICATION VERDICT</div>
-            <div class="verdict-text" id="verdictText">—</div>
-          </div>
-          <div style="padding:0 14px 14px">
-            <div class="cblock">
-              <div class="crow"><div class="clabel" data-i18n="deepfake_prob">DEEPFAKE PROBABILITY</div><div class="cpct" id="fakePct" style="color:var(--accent2)">0%</div></div>
-              <div class="cbar"><div class="cfill fake-fill" id="fakeFill" style="width:0%"></div></div>
-            </div>
-            <div class="cblock">
-              <div class="crow"><div class="clabel" data-i18n="auth_score">AUTHENTICITY SCORE</div><div class="cpct" id="realPct" style="color:var(--accent3)">0%</div></div>
-              <div class="cbar"><div class="cfill real-fill" id="realFill" style="width:0%"></div></div>
-            </div>
-          </div>
-          <div class="mgrid">
-            <div class="mcell"><div class="mname" data-i18n="m_face">Facial Consistency</div><div class="mval" id="m1">—</div></div>
-            <div class="mcell"><div class="mname" data-i18n="m_freq">Frequency Artifacts</div><div class="mval" id="m2">—</div></div>
-            <div class="mcell"><div class="mname" data-i18n="m_blink">Eye Blink Pattern</div><div class="mval" id="m3">—</div></div>
-            <div class="mcell"><div class="mname" data-i18n="m_gan">GAN Fingerprint</div><div class="mval" id="m4">—</div></div>
-            <div class="mcell"><div class="mname" data-i18n="m_skin">Skin Texture</div><div class="mval" id="m5">—</div></div>
-            <div class="mcell"><div class="mname" data-i18n="m_noise">Compression Noise</div><div class="mval" id="m6">—</div></div>
-          </div>
-          <div style="padding:0 14px 14px">
-            <button class="btn sharebtn" onclick="openShareModal()" style="width:100%;justify-content:center">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              <span data-i18n="share_result">SHARE RESULT</span>
-            </button>
-          </div>
-        </div>
-        <div style="padding:32px;text-align:center;color:var(--muted)" id="resultsEmpty">
-          <div style="font-family:'Share Tech Mono';font-size:10px;letter-spacing:3px" data-i18n="awaiting">AWAITING INPUT</div>
-        </div>
-      </div>
+    <div class="step-card">
+      <div class="step-n">03</div>
+      <div class="step-icon">⚖️</div>
+      <div class="step-title">ENSEMBLE VERDICT</div>
+      <div class="step-body">Weighted aggregation of all signals. Anatomy and physics signals carry higher weight — the exact domains AI generators fail at most.</div>
     </div>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="panel">
-        <div class="ph"><div class="phdot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></div><div class="ph-title" data-i18n="threat_index">Threat Index</div></div>
-        <div class="threat-wrap">
-          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:12px" data-i18n="risk_assessment">RISK ASSESSMENT</div>
-          <div style="display:flex;justify-content:center;margin-bottom:10px">
-            <div class="rwrap">
-              <svg class="rsvg" viewBox="0 0 120 120"><circle class="rbg" cx="60" cy="60" r="50"/><circle class="rfill" id="radialFill" cx="60" cy="60" r="50" stroke="#00e5ff" stroke-dasharray="314" stroke-dashoffset="314"/></svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div class="rtext" id="threatPct">—</div>
-                <div class="rsub" data-i18n="threat">THREAT</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><div class="phdot"></div><div class="ph-title" data-i18n="model_ensemble">Model Ensemble</div></div>
-        <div class="mbadges">
-          <div class="mbadge"><div class="mbn">XCEPTION</div><div class="mbs" id="s1">—</div></div>
-          <div class="mbadge"><div class="mbn">EFFICIENTNET-B7</div><div class="mbs" id="s2">—</div></div>
-          <div class="mbadge"><div class="mbn">FREQ. ANALYZER</div><div class="mbs" id="s3">—</div></div>
-          <div class="mbadge"><div class="mbn">FACE-FORENSICS++</div><div class="mbs" id="s4">—</div></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><div class="phdot" style="background:var(--accent3);box-shadow:0 0 6px var(--accent3)"></div><div class="ph-title" data-i18n="session_stats">Session Stats</div></div>
-        <div class="srow"><div class="slabel" data-i18n="total_scanned">TOTAL SCANNED</div><div class="sval" id="totalScanned">0</div></div>
-        <div class="srow"><div class="slabel" data-i18n="deepfakes_found">DEEPFAKES</div><div class="sval" style="color:var(--accent2)" id="deepfakesFound">0</div></div>
-        <div class="srow"><div class="slabel" data-i18n="authentic">AUTHENTIC</div><div class="sval" style="color:var(--accent3)" id="authenticFound">0</div></div>
-        <div class="srow"><div class="slabel" data-i18n="avg_conf">AVG CONF.</div><div class="sval" id="avgConf">—</div></div>
-      </div>
-      <div class="panel">
-        <div class="ph"><div class="phdot" style="background:var(--muted)"></div><div class="ph-title" data-i18n="system_log">System Log</div></div>
-        <div class="loglist" id="logList">
-          <div class="lentry"><div class="ltime">00:00:00</div><div class="lmsg ok">SYSTEM INITIALIZED</div></div>
-          <div class="lentry"><div class="ltime">00:00:01</div><div class="lmsg info">MODELS LOADED</div></div>
-          <div class="lentry"><div class="ltime">00:00:02</div><div class="lmsg ok">READY</div></div>
-        </div>
-      </div>
+    <div class="step-card">
+      <div class="step-n">04</div>
+      <div class="step-icon">📋</div>
+      <div class="step-title">FULL REPORT</div>
+      <div class="step-body">Deepfake probability, per-signal scores, ELA heatmap overlay, and plain-language explanation of every red flag found.</div>
     </div>
   </div>
 </div>
+
+<!-- ─── SIGNALS ─── -->
+<div id="signals" style="position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 48px 100px">
+  <span class="sec-tag">DETECTION CAPABILITIES</span>
+  <h2 class="sec-title">10 FORENSIC SIGNALS</h2>
+  <p class="sec-sub">Each signal targets a specific failure mode unique to AI image generators like Midjourney, DALL-E 3, and Stable Diffusion.</p>
+  <div class="signals-grid">
+    <div class="sig-card"><div class="sig-num">SIGNAL 01</div><div class="sig-icon">🔬</div><div class="sig-title">PIXEL &amp; SENSOR NOISE</div><div class="sig-body">Real cameras produce photon shot noise. AI images are unnaturally clean — near-zero noise floor is a primary synthetic signature.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 02</div><div class="sig-icon">🌊</div><div class="sig-title">FFT SPECTRAL PATTERN</div><div class="sig-body">GAN upsampling leaves characteristic 2px checkerboard artifacts in the frequency domain. Stable Diffusion shows unique spectral periodicity.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 03</div><div class="sig-icon">📊</div><div class="sig-title">ELA COMPRESSION</div><div class="sig-body">Error Level Analysis exposes freshly generated images — no editing history means abnormally uniform block compression variance.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 04</div><div class="sig-icon">👁️</div><div class="sig-title">SKIN &amp; FACE TEXTURE</div><div class="sig-body">AI skin is too smooth — no pores, no micro-texture variation. Luminance std-dev below threshold flags "plasticky" AI faces.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 05</div><div class="sig-icon">🎨</div><div class="sig-title">COLOR HISTOGRAM</div><div class="sig-body">AI generators produce suspiciously smooth, bell-curved histograms and abnormally low saturation variance — real photos are messier.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 06</div><div class="sig-icon">✋</div><div class="sig-title">HAND ANATOMY</div><div class="sig-body">AI consistently fails at hands — extra fingers, merged digits, impossible joints. We count protrusions and measure boundary complexity.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 07</div><div class="sig-icon">💡</div><div class="sig-title">LIGHTING PHYSICS</div><div class="sig-body">Shadows in conflicting directions, misplaced specular highlights — AI treats lighting as decoration, not physics.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 08</div><div class="sig-icon">🌆</div><div class="sig-title">BACKGROUND COHERENCE</div><div class="sig-body">AI deprioritizes backgrounds — warped objects, repeating texture tiles, and impossible depth are hallmarks of generation artifacts.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 09</div><div class="sig-icon">📐</div><div class="sig-title">TEXT &amp; GEOMETRY</div><div class="sig-body">Curved straight lines, nonsense text, broken vanishing points — AI fails spatial reasoning that real cameras record perfectly.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 10</div><div class="sig-icon">⚙️</div><div class="sig-title">ENSEMBLE AGGREGATION</div><div class="sig-body">Weighted combination with anatomy and physics boosts. Multiple high signals trigger cascading confidence multipliers.</div></div>
+  </div>
 </div>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-  <div class="flogo">VERIDEX</div>
-  <div class="ftagline" data-i18n="footer_tagline">IN A WORLD WHERE SEEING IS NO LONGER BELIEVING — WE GIVE YOU THE TRUTH</div>
-  <div class="flinks">
-    <span class="flink" onclick="smoothScroll(event,'home')" data-i18n="nav_home">HOME</span>
-    <span class="flink" onclick="smoothScroll(event,'features')" data-i18n="nav_features">FEATURES</span>
-    <span class="flink" onclick="smoothScroll(event,'detector')" data-i18n="nav_detector">DETECTOR</span>
+<!-- ─── DEMO PREVIEW ─── -->
+<div class="demo-wrap">
+  <div class="demo-text">
+    <span class="sec-tag">LIVE EXAMPLE</span>
+    <h2 class="sec-title">SEE THE<br>ENGINE FIRE</h2>
+    <p class="sec-sub">Real output for a Midjourney-generated portrait. Seven signals fired — ensemble correctly flagged it as DEEPFAKE with 87% confidence.</p>
+    <br><br>
+    <a href="engine.html" class="cta-main" style="display:inline-flex">TRY YOUR OWN IMAGE →</a>
   </div>
-  <div class="fcopy">© 2026 VERIDEX SYSTEMS — NEURAL AUTHENTICITY ENGINE — ALL RIGHTS RESERVED</div>
+  <div class="demo-panel">
+    <div class="demo-row">
+      <div class="demo-label">PIXEL NOISE</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:78%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">78%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">FFT SPECTRAL</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:82%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">82%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">ELA COMPRESSION</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:91%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">91%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">SKIN TEXTURE</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:85%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">85%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">HAND ANATOMY</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:95%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">95%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">LIGHTING</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:38%;background:linear-gradient(90deg,#ffb700,#ffd060)"></div></div>
+      <div class="demo-pct" style="color:#ffb700">38%</div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-label">BACKGROUND</div>
+      <div class="demo-bar"><div class="demo-fill" style="width:63%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div>
+      <div class="demo-pct" style="color:#ff1f4e">63%</div>
+    </div>
+    <div class="verdict-big">
+      <div class="vb-eyebrow">FORENSIC VERDICT</div>
+      <div class="vb-word">DEEPFAKE</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="foot-brand">
+    <div class="foot-logo">VERIDEX</div>
+    <div class="foot-tag">IN A WORLD WHERE SEEING IS NO LONGER BELIEVING — WE GIVE YOU THE TRUTH.<br>ALL ANALYSIS RUNS LOCALLY. NO DATA LEAVES YOUR BROWSER.</div>
+  </div>
+  <nav class="foot-nav">
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#signals">DETECTION SIGNALS</a>
+    <a href="engine.html">DETECTOR ENGINE</a>
+    <a href="dashboard.html">ANALYTICS DASHBOARD</a>
+  </nav>
+  <div class="foot-copy">© 2025 VERIDEX — NEURAL FORENSIC ENGINE · BUILT FOR TRUTH</div>
 </footer>
 
-<!-- SHARE MODAL -->
-<div class="modal-overlay" id="shareModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeShareModal()">✕</button>
-    <div class="modal-title" data-i18n="share_title">SHARE ANALYSIS RESULT</div>
-    <div class="src">
-      <div class="srr"><div class="srl" data-i18n="verdict_label">VERDICT</div><div class="srv" id="shareVerdict">—</div></div>
-      <div class="srr"><div class="srl" data-i18n="confidence_label">CONFIDENCE</div><div class="srv" id="shareConf">—</div></div>
-      <div class="srr"><div class="srl" data-i18n="analyzed_by">ANALYZED BY</div><div class="srv">VERIDEX v3.7</div></div>
-      <div class="srr"><div class="srl" data-i18n="timestamp">TIMESTAMP</div><div class="srv" id="shareTime">—</div></div>
-    </div>
-    <div class="clink-row">
-      <input class="cinput" id="shareLinkInput" value="https://veridex-detector.netlify.app" readonly>
-      <button class="btn" onclick="copyLink()"><span data-i18n="copy_link">COPY</span></button>
-    </div>
-    <div class="sbtns">
-      <button class="btn" onclick="shareWA()" style="flex:1;justify-content:center">💬 <span data-i18n="share_wa">WhatsApp</span></button>
-      <button class="btn" onclick="shareTW()" style="flex:1;justify-content:center">🐦 <span data-i18n="share_tw">Twitter</span></button>
-      <button class="btn" onclick="downloadResult()" style="flex:1;justify-content:center">⬇ <span data-i18n="download">Download</span></button>
-    </div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-
 <script>
-const T={
-  en:{badge:"⬡ AI-POWERED DEEPFAKE DETECTION SYSTEM ⬡",hero_sub:"NEURAL AUTHENTICITY ENGINE — BUILT FOR TRUTH",accuracy:"ACCURACY",ai_models:"AI MODELS",analysis_time:"ANALYSIS TIME",languages:"LANGUAGES",start_detection:"START DETECTION",learn_more:"LEARN MORE",scroll_down:"SCROLL DOWN",how_it_works:"HOW IT WORKS",how_sub:"MULTI-MODEL ENSEMBLE DETECTION PIPELINE",f1_title:"NEURAL ANALYSIS",f1_desc:"Xception & EfficientNet-B7 CNNs analyze pixel-level patterns, facial geometry, and blending artifacts with 99.2% accuracy.",f2_title:"FREQUENCY FORENSICS",f2_desc:"FFT & DCT analysis detects invisible GAN fingerprints and spectral anomalies that reveal synthetic media generation.",f3_title:"FACE FORENSICS++",f3_desc:"Landmark detection analyzes eye blink patterns, skin texture consistency, and facial boundary irregularities.",f4_title:"ENSEMBLE VERDICT",f4_desc:"All 4 models vote with weighted confidence scores to produce a final tamper-proof verdict.",engine_sub:"UPLOAD · ANALYZE · VERIFY",online:"ONLINE",dark_mode:"DARK",light_mode:"LIGHT",media_input:"Media Input",tab_image:"IMAGE",tab_video:"VIDEO",tab_batch:"BATCH",drop_media:"DROP MEDIA FILE",file_types:"PNG · JPG · MP4 · MOV · MAX 500MB",select_file:"SELECT FILE",run_analysis:"RUN ANALYSIS",reset:"RESET",initializing:"INITIALIZING MODELS",analysis_results:"Analysis Results",classification:"CLASSIFICATION VERDICT",deepfake_prob:"DEEPFAKE PROBABILITY",auth_score:"AUTHENTICITY SCORE",share_result:"SHARE RESULT",awaiting:"AWAITING INPUT",threat_index:"Threat Index",risk_assessment:"RISK ASSESSMENT",threat:"THREAT",model_ensemble:"Model Ensemble",session_stats:"Session Stats",total_scanned:"TOTAL SCANNED",deepfakes_found:"DEEPFAKES",authentic:"AUTHENTIC",avg_conf:"AVG CONF.",system_log:"System Log",m_face:"Facial Consistency",m_freq:"Frequency Artifacts",m_blink:"Eye Blink Pattern",m_gan:"GAN Fingerprint",m_skin:"Skin Texture",m_noise:"Compression Noise",share_title:"SHARE ANALYSIS RESULT",verdict_label:"VERDICT",confidence_label:"CONFIDENCE",analyzed_by:"ANALYZED BY",timestamp:"TIMESTAMP",copy_link:"COPY",share_wa:"WhatsApp",share_tw:"Twitter",download:"Download",verdict_fake:"DEEPFAKE",verdict_real:"AUTHENTIC",copied:"LINK COPIED!",downloaded:"DOWNLOADED!",footer_tagline:"IN A WORLD WHERE SEEING IS NO LONGER BELIEVING — WE GIVE YOU THE TRUTH",nav_home:"HOME",nav_features:"FEATURES",nav_detector:"DETECTOR"},
-  hi:{badge:"⬡ AI-संचालित डीपफेक डिटेक्शन सिस्टम ⬡",hero_sub:"न्यूरल प्रमाणिकता इंजन — सत्य के लिए बनाया गया",accuracy:"सटीकता",ai_models:"AI मॉडल",analysis_time:"विश्लेषण समय",languages:"भाषाएं",start_detection:"पहचान शुरू करें",learn_more:"और जानें",scroll_down:"नीचे स्क्रॉल करें",how_it_works:"यह कैसे काम करता है",how_sub:"मल्टी-मॉडल एन्सेम्बल डिटेक्शन",f1_title:"न्यूरल विश्लेषण",f1_desc:"Xception और EfficientNet-B7 CNN पिक्सल-स्तरीय पैटर्न का विश्लेषण करते हैं।",f2_title:"फ्रीक्वेंसी फोरेंसिक्स",f2_desc:"FFT और DCT विश्लेषण GAN फिंगरप्रिंट का पता लगाता है।",f3_title:"फेस फोरेंसिक्स++",f3_desc:"लैंडमार्क डिटेक्शन आंखों और त्वचा का विश्लेषण करता है।",f4_title:"एन्सेम्बल फैसला",f4_desc:"सभी 4 मॉडल मिलकर अंतिम फैसला देते हैं।",engine_sub:"अपलोड · विश्लेषण · सत्यापित",online:"ऑनलाइन",dark_mode:"डार्क",light_mode:"लाइट",media_input:"मीडिया इनपुट",tab_image:"इमेज",tab_video:"वीडियो",tab_batch:"बैच",drop_media:"मीडिया फ़ाइल यहाँ डालें",file_types:"PNG · JPG · MP4 · अधिकतम 500MB",select_file:"फ़ाइल चुनें",run_analysis:"विश्लेषण करें",reset:"रीसेट",initializing:"मॉडल लोड हो रहे हैं",analysis_results:"विश्लेषण परिणाम",classification:"वर्गीकरण निर्णय",deepfake_prob:"डीपफेक संभावना",auth_score:"प्रामाणिकता स्कोर",share_result:"परिणाम शेयर करें",awaiting:"इनपुट की प्रतीक्षा",threat_index:"खतरा सूचकांक",risk_assessment:"जोखिम मूल्यांकन",threat:"खतरा",model_ensemble:"मॉडल एन्सेम्बल",session_stats:"सत्र आँकड़े",total_scanned:"कुल स्कैन",deepfakes_found:"डीपफेक",authentic:"प्रामाणिक",avg_conf:"औसत विश्वास",system_log:"सिस्टम लॉग",m_face:"चेहरे की संगति",m_freq:"आवृत्ति कलाकृतियाँ",m_blink:"पलक झपकना",m_gan:"GAN फिंगरप्रिंट",m_skin:"त्वचा बनावट",m_noise:"संपीड़न शोर",share_title:"परिणाम शेयर करें",verdict_label:"निर्णय",confidence_label:"विश्वास",analyzed_by:"विश्लेषण द्वारा",timestamp:"समय",copy_link:"कॉपी",share_wa:"व्हाट्सएप",share_tw:"ट्विटर",download:"डाउनलोड",verdict_fake:"डीपफेक",verdict_real:"प्रामाणिक",copied:"लिंक कॉपी हो गया!",downloaded:"डाउनलोड हुआ!",footer_tagline:"जब देखना सच नहीं रहा — हम आपको सत्य देते हैं",nav_home:"होम",nav_features:"विशेषताएं",nav_detector:"डिटेक्टर"},
-  te:{badge:"⬡ AI-ఆధారిత డీప్‌ఫేక్ డిటెక్షన్ సిస్టమ్ ⬡",hero_sub:"న్యూరల్ ప్రామాణికత ఇంజిన్ — సత్యం కోసం",accuracy:"ఖచ్చితత్వం",ai_models:"AI మోడల్స్",analysis_time:"విశ్లేషణ సమయం",languages:"భాషలు",start_detection:"గుర్తింపు ప్రారంభించండి",learn_more:"మరింత తెలుసుకోండి",scroll_down:"క్రిందికి స్క్రోల్",how_it_works:"ఇది ఎలా పని చేస్తుంది",how_sub:"మల్టీ-మోడల్ ఎన్సెంబుల్ డిటెక్షన్",f1_title:"న్యూరల్ విశ్లేషణ",f1_desc:"Xception & EfficientNet-B7 CNN లు పిక్సెల్-స్థాయి నమూనాలను విశ్లేషిస్తాయి.",f2_title:"ఫ్రీక్వెన్సీ ఫోరెన్సిక్స్",f2_desc:"FFT & DCT విశ్లేషణ GAN వేలిముద్రలను గుర్తిస్తుంది.",f3_title:"ఫేస్ ఫోరెన్సిక్స్++",f3_desc:"లాండ్‌మార్క్ డిటెక్షన్ కంటి రెప్ప మరియు చర్మాన్ని విశ్లేషిస్తుంది.",f4_title:"ఎన్సెంబుల్ తీర్పు",f4_desc:"అన్ని 4 మోడల్స్ తుది తీర్పు ఇస్తాయి.",engine_sub:"అప్‌లోడ్ · విశ్లేషణ · ధృవీకరణ",online:"ఆన్‌లైన్",dark_mode:"డార్క్",light_mode:"లైట్",media_input:"మీడియా ఇన్‌పుట్",tab_image:"చిత్రం",tab_video:"వీడియో",tab_batch:"బ్యాచ్",drop_media:"మీడియా ఫైల్ వదలండి",file_types:"PNG · JPG · MP4 · గరిష్టం 500MB",select_file:"ఫైల్ ఎంచుకోండి",run_analysis:"విశ్లేషణ అమలు",reset:"రీసెట్",initializing:"మోడల్స్ లోడవుతున్నాయి",analysis_results:"విశ్లేషణ ఫలితాలు",classification:"వర్గీకరణ తీర్పు",deepfake_prob:"డీప్‌ఫేక్ సంభావ్యత",auth_score:"ప్రామాణికత స్కోరు",share_result:"ఫలితం షేర్ చేయండి",awaiting:"ఇన్‌పుట్ కోసం వేచి ఉంది",threat_index:"ముప్పు సూచిక",risk_assessment:"రిస్క్ అంచనా",threat:"ముప్పు",model_ensemble:"మోడల్ ఎన్సెంబుల్",session_stats:"సెషన్ గణాంకాలు",total_scanned:"మొత్తం స్కాన్",deepfakes_found:"డీప్‌ఫేక్‌లు",authentic:"అసలైనవి",avg_conf:"సగటు విశ్వాసం",system_log:"సిస్టమ్ లాగ్",m_face:"ముఖ స్థిరత్వం",m_freq:"పౌనఃపున్య అర్టిఫాక్ట్స్",m_blink:"కంటి రెప్ప",m_gan:"GAN వేలిముద్ర",m_skin:"చర్మ ఆకృతి",m_noise:"కంప్రెషన్ నాయిస్",share_title:"ఫలితం షేర్ చేయండి",verdict_label:"తీర్పు",confidence_label:"విశ్వాసం",analyzed_by:"విశ్లేషించినది",timestamp:"సమయముద్ర",copy_link:"కాపీ",share_wa:"వాట్సాప్",share_tw:"ట్విట్టర్",download:"డౌన్‌లోడ్",verdict_fake:"డీప్‌ఫేక్",verdict_real:"అసలైనది",copied:"లింక్ కాపీ అయింది!",downloaded:"డౌన్‌లోడైంది!",footer_tagline:"చూడడం నిజం కాకపోయినప్పుడు — మేము మీకు నిజం చెప్తాం",nav_home:"హోమ్",nav_features:"ఫీచర్లు",nav_detector:"డిటెక్టర్"},
-  fr:{badge:"⬡ SYSTÈME DE DÉTECTION DEEPFAKE PAR IA ⬡",hero_sub:"MOTEUR D'AUTHENTICITÉ NEURALE — POUR LA VÉRITÉ",accuracy:"PRÉCISION",ai_models:"MODÈLES IA",analysis_time:"TEMPS D'ANALYSE",languages:"LANGUES",start_detection:"LANCER DÉTECTION",learn_more:"EN SAVOIR PLUS",scroll_down:"DÉFILER",how_it_works:"COMMENT ÇA MARCHE",how_sub:"PIPELINE DE DÉTECTION MULTI-MODÈLES",f1_title:"ANALYSE NEURALE",f1_desc:"Les CNN Xception et EfficientNet-B7 analysent les motifs à niveau pixel.",f2_title:"FORENSIQUE FRÉQUENTIELLE",f2_desc:"L'analyse FFT & DCT détecte les empreintes GAN invisibles.",f3_title:"FACE FORENSICS++",f3_desc:"La détection de points de repère analyse les clignements d'yeux.",f4_title:"VERDICT D'ENSEMBLE",f4_desc:"Les 4 modèles votent pour un verdict final.",engine_sub:"TÉLÉCHARGER · ANALYSER · VÉRIFIER",online:"EN LIGNE",dark_mode:"SOMBRE",light_mode:"CLAIR",media_input:"Entrée Média",tab_image:"IMAGE",tab_video:"VIDÉO",tab_batch:"LOT",drop_media:"DÉPOSER UN FICHIER",file_types:"PNG · JPG · MP4 · MAX 500MB",select_file:"CHOISIR",run_analysis:"ANALYSER",reset:"RÉINITIALISER",initializing:"INITIALISATION",analysis_results:"Résultats",classification:"VERDICT",deepfake_prob:"PROB. DEEPFAKE",auth_score:"AUTHENTICITÉ",share_result:"PARTAGER",awaiting:"EN ATTENTE",threat_index:"Menace",risk_assessment:"ÉVALUATION",threat:"MENACE",model_ensemble:"Ensemble",session_stats:"Statistiques",total_scanned:"TOTAL",deepfakes_found:"DEEPFAKES",authentic:"AUTHENTIQUES",avg_conf:"CONF. MOY.",system_log:"Journal",m_face:"Cohérence Faciale",m_freq:"Artefacts Fréq.",m_blink:"Clignement",m_gan:"Empreinte GAN",m_skin:"Texture Peau",m_noise:"Bruit",share_title:"PARTAGER",verdict_label:"VERDICT",confidence_label:"CONFIANCE",analyzed_by:"ANALYSÉ PAR",timestamp:"HORODATAGE",copy_link:"COPIER",share_wa:"WhatsApp",share_tw:"Twitter",download:"Télécharger",verdict_fake:"DEEPFAKE",verdict_real:"AUTHENTIQUE",copied:"COPIÉ!",downloaded:"TÉLÉCHARGÉ!",footer_tagline:"DANS UN MONDE OÙ VOIR N'EST PLUS CROIRE — NOUS VOUS DONNONS LA VÉRITÉ",nav_home:"ACCUEIL",nav_features:"FONCTIONS",nav_detector:"DÉTECTEUR"},
-  es:{badge:"⬡ SISTEMA DE DETECCIÓN DEEPFAKE CON IA ⬡",hero_sub:"MOTOR DE AUTENTICIDAD NEURAL — PARA LA VERDAD",accuracy:"PRECISIÓN",ai_models:"MODELOS IA",analysis_time:"TIEMPO ANÁLISIS",languages:"IDIOMAS",start_detection:"INICIAR DETECCIÓN",learn_more:"SABER MÁS",scroll_down:"DESPLAZAR",how_it_works:"CÓMO FUNCIONA",how_sub:"PIPELINE DE DETECCIÓN MULTI-MODELO",f1_title:"ANÁLISIS NEURAL",f1_desc:"Las CNN Xception y EfficientNet-B7 analizan patrones a nivel de píxel.",f2_title:"FORENSE DE FRECUENCIAS",f2_desc:"El análisis FFT y DCT detecta huellas GAN invisibles.",f3_title:"FACE FORENSICS++",f3_desc:"La detección de landmarks analiza el parpadeo y la textura de piel.",f4_title:"VEREDICTO ENSEMBLE",f4_desc:"Los 4 modelos votan para un veredicto final.",engine_sub:"SUBIR · ANALIZAR · VERIFICAR",online:"EN LÍNEA",dark_mode:"OSCURO",light_mode:"CLARO",media_input:"Entrada Medios",tab_image:"IMAGEN",tab_video:"VIDEO",tab_batch:"LOTE",drop_media:"SOLTAR ARCHIVO",file_types:"PNG · JPG · MP4 · MÁX 500MB",select_file:"ELEGIR",run_analysis:"ANALIZAR",reset:"REINICIAR",initializing:"INICIALIZANDO",analysis_results:"Resultados",classification:"VEREDICTO",deepfake_prob:"PROB. DEEPFAKE",auth_score:"AUTENTICIDAD",share_result:"COMPARTIR",awaiting:"ESPERANDO",threat_index:"Amenaza",risk_assessment:"EVALUACIÓN",threat:"AMENAZA",model_ensemble:"Conjunto",session_stats:"Estadísticas",total_scanned:"TOTAL",deepfakes_found:"DEEPFAKES",authentic:"AUTÉNTICOS",avg_conf:"CONF. PROM.",system_log:"Registro",m_face:"Consistencia Facial",m_freq:"Artefactos Freq.",m_blink:"Parpadeo",m_gan:"Huella GAN",m_skin:"Textura Piel",m_noise:"Ruido",share_title:"COMPARTIR",verdict_label:"VEREDICTO",confidence_label:"CONFIANZA",analyzed_by:"ANALIZADO POR",timestamp:"MARCA TIEMPO",copy_link:"COPIAR",share_wa:"WhatsApp",share_tw:"Twitter",download:"Descargar",verdict_fake:"DEEPFAKE",verdict_real:"AUTÉNTICO",copied:"¡COPIADO!",downloaded:"¡DESCARGADO!",footer_tagline:"EN UN MUNDO DONDE VER YA NO ES CREER — TE DAMOS LA VERDAD",nav_home:"INICIO",nav_features:"FUNCIONES",nav_detector:"DETECTOR"},
-  ar:{badge:"⬡ نظام كشف التزييف العميق بالذكاء الاصطناعي ⬡",hero_sub:"محرك المصادقة العصبية — من أجل الحقيقة",accuracy:"الدقة",ai_models:"النماذج",analysis_time:"وقت التحليل",languages:"اللغات",start_detection:"بدء الكشف",learn_more:"اعرف المزيد",scroll_down:"انتقل للأسفل",how_it_works:"كيف يعمل",how_sub:"خط أنابيب الكشف متعدد النماذج",f1_title:"التحليل العصبي",f1_desc:"تحلل شبكات Xception وEfficientNet الأنماط على مستوى البكسل.",f2_title:"الطب الشرعي الترددي",f2_desc:"يكشف تحليل FFT عن بصمات GAN غير المرئية.",f3_title:"Face Forensics++",f3_desc:"يحلل اكتشاف المعالم أنماط رمش العين.",f4_title:"حكم المجموعة",f4_desc:"تصوت جميع النماذج لإصدار حكم نهائي.",engine_sub:"تحميل · تحليل · تحقق",online:"متصل",dark_mode:"داكن",light_mode:"فاتح",media_input:"إدخال الوسائط",tab_image:"صورة",tab_video:"فيديو",tab_batch:"دفعة",drop_media:"أسقط الملف",file_types:"PNG · JPG · MP4 · الحد 500MB",select_file:"اختر ملف",run_analysis:"تحليل",reset:"إعادة",initializing:"تهيئة",analysis_results:"النتائج",classification:"الحكم",deepfake_prob:"احتمال التزوير",auth_score:"درجة الأصالة",share_result:"مشاركة",awaiting:"في انتظار",threat_index:"التهديد",risk_assessment:"تقييم",threat:"تهديد",model_ensemble:"النماذج",session_stats:"إحصائيات",total_scanned:"الإجمالي",deepfakes_found:"مزيفات",authentic:"أصيل",avg_conf:"متوسط الثقة",system_log:"السجل",m_face:"اتساق الوجه",m_freq:"تشوهات التردد",m_blink:"رمش العين",m_gan:"بصمة GAN",m_skin:"ملمس الجلد",m_noise:"الضوضاء",share_title:"مشاركة النتيجة",verdict_label:"الحكم",confidence_label:"الثقة",analyzed_by:"تحليل بواسطة",timestamp:"الوقت",copy_link:"نسخ",share_wa:"واتساب",share_tw:"تويتر",download:"تحميل",verdict_fake:"مزيف",verdict_real:"أصيل",copied:"تم النسخ!",downloaded:"تم التحميل!",footer_tagline:"في عالم لم يعد الرؤية تعني التصديق — نحن نمنحك الحقيقة",nav_home:"الرئيسية",nav_features:"المميزات",nav_detector:"الكاشف"}
-};
+/* ─── CANVAS PARTICLE BG ─── */
+const cv = document.getElementById('bgc');
+const cx = cv.getContext('2d');
+let W, H, pts = [];
+const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+resize(); addEventListener('resize', resize);
+for (let i = 0; i < 55; i++) pts.push({
+  x: Math.random()*1920, y: Math.random()*1080,
+  vx: (Math.random()-.5)*.28, vy: (Math.random()-.5)*.28,
+  r: Math.random()*1.4+.4, o: Math.random()*.45+.1
+});
+function drawBg() {
+  cx.clearRect(0,0,W,H);
+  const dark = document.documentElement.dataset.theme !== 'light';
+  const gc = dark ? '0,210,255' : '0,100,180';
+  cx.strokeStyle = dark ? 'rgba(0,210,255,0.04)' : 'rgba(0,100,180,0.05)';
+  cx.lineWidth = 1;
+  for (let x=0;x<W;x+=56){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke()}
+  for (let y=0;y<H;y+=56){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke()}
+  pts.forEach(p => {
+    p.x = (p.x+p.vx+W)%W; p.y = (p.y+p.vy+H)%H;
+    cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    cx.fillStyle = `rgba(${gc},${p.o})`; cx.fill();
+  });
+  for (let i=0;i<pts.length;i++) for (let j=i+1;j<pts.length;j++) {
+    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if (d<130) {
+      cx.beginPath(); cx.moveTo(pts[i].x,pts[i].y); cx.lineTo(pts[j].x,pts[j].y);
+      cx.strokeStyle = `rgba(${gc},${(1-d/130)*.1})`; cx.lineWidth=.6; cx.stroke();
+    }
+  }
+  requestAnimationFrame(drawBg);
+}
+drawBg();
 
-let lang='en', theme='dark';
-let stats={total:0,fake:0,real:0,sum:0};
-let t0=Date.now(), lastR=null;
+/* ─── TICKER ─── */
+const tickItems = [
+  '<em>MIDJOURNEY</em> DETECTED','<em>DALLE-3</em> DETECTED','<em>STABLE DIFFUSION</em> DETECTED',
+  '<em>STYLEGAN</em> DETECTED','<em>PIXEL NOISE</em> ANALYSIS','<em>FFT SPECTRAL</em> SCAN',
+  '<em>ELA COMPRESSION</em> CHECK','<em>HAND ANATOMY</em> VERIFIED','<em>10 SIGNALS</em> ACTIVE',
+  '<em>LIGHTING PHYSICS</em> CHECKED','<em>BACKGROUND</em> SCANNED','<em>SKIN TEXTURE</em> ANALYZED',
+];
+const t = [...tickItems,...tickItems];
+document.getElementById('tickerTrack').innerHTML = t.map(s=>`<span class="ticker-item">${s}</span>`).join('');
 
-function smoothScroll(e,id){e.preventDefault();document.getElementById(id).scrollIntoView({behavior:'smooth'})}
-function setLanguage(l){
-  lang=l;const t=T[l];
-  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(t[k])el.textContent=t[k]});
-  document.documentElement.lang=l;
-  if(lastR!==null){document.getElementById('verdictText').textContent=lastR?t.verdict_fake:t.verdict_real;document.getElementById('shareVerdict').textContent=lastR?t.verdict_fake:t.verdict_real}
+/* ─── THEME ─── */
+const btn = document.getElementById('themeToggle');
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  btn.textContent = t==='dark' ? '🌙' : '☀️';
+  localStorage.setItem('vx_theme', t);
 }
-function toggleTheme(){
-  theme=theme==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('themeIcon').textContent=theme==='dark'?'🌙':'☀️';
-  const t=T[lang];
-  document.getElementById('themeLabel').textContent=theme==='dark'?(t.dark_mode||'DARK'):(t.light_mode||'LIGHT');
-  addLog('THEME: '+theme.toUpperCase(),'info');
-}
-function gt(){const e=Math.floor((Date.now()-t0)/1000);return[Math.floor(e/3600),Math.floor((e%3600)/60),e%60].map(n=>String(n).padStart(2,'0')).join(':')}
-function addLog(msg,type='info'){const log=document.getElementById('logList');const el=document.createElement('div');el.className='lentry';el.innerHTML=`<div class="ltime">${gt()}</div><div class="lmsg ${type}">${msg}</div>`;log.appendChild(el);log.scrollTop=log.scrollHeight}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-function switchTab(el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
-function handleFile(input){
-  const file=input.files[0];if(!file)return;
-  addLog('FILE: '+file.name.toUpperCase(),'info');
-  const url=URL.createObjectURL(file);
-  const img=document.getElementById('previewImg'),vid=document.getElementById('previewVid');
-  if(file.type.startsWith('image/')){img.src=url;img.style.display='';vid.style.display='none'}
-  else{vid.src=url;vid.style.display='';img.style.display='none'}
-  document.getElementById('uploadZone').style.display='none';
-  document.getElementById('previewArea').classList.add('active');
-  document.querySelector('.tab-row').style.display='none';
-  document.getElementById('resultsEmpty').style.display='none';
-}
-function startAnalysis(){
-  document.getElementById('previewArea').classList.remove('active');
-  document.getElementById('analyzingState').classList.add('active');
-  addLog('ANALYSIS STARTED','warn');
-  [[400,'PREPROCESSING','Normalizing · Resizing'],[900,'XCEPTION CNN','Inception modules'],[1500,'EFFICIENTNET-B7','Feature extraction'],[2100,'FREQUENCY ANALYSIS','FFT artifacts'],[2700,'FACE FORENSICS++','Landmark detection'],[3200,'AGGREGATING','Weighted voting']].forEach(([d,s,b])=>setTimeout(()=>{document.getElementById('analyzeStep').textContent=s;document.getElementById('analyzeProgress').textContent=b;addLog(s,'info')},d));
-  setTimeout(showResults,3800);
-}
-function showResults(){
-  document.getElementById('analyzingState').classList.remove('active');
-  const isFake=Math.random()>.45,fc=isFake?70+Math.random()*28:5+Math.random()*25,rc=100-fc;
-  lastR=isFake;stats.total++;if(isFake)stats.fake++;else stats.real++;stats.sum+=Math.max(fc,rc);
-  const t=T[lang];
-  const vb=document.getElementById('verdictBox'),vt=document.getElementById('verdictText');
-  vb.className='verdict-box '+(isFake?'fake':'real');vt.className='verdict-text '+(isFake?'fake':'real');vt.textContent=isFake?t.verdict_fake:t.verdict_real;
-  setTimeout(()=>{document.getElementById('fakeFill').style.width=fc.toFixed(1)+'%';document.getElementById('realFill').style.width=rc.toFixed(1)+'%';document.getElementById('fakePct').textContent=fc.toFixed(1)+'%';document.getElementById('realPct').textContent=rc.toFixed(1)+'%'},100);
-  const ok=v=>!isFake||Math.random()>v;
-  sm('m1',ok(.6)?'CONSISTENT':'ANOMALOUS',ok(.6)?'safe':'danger');
-  sm('m2',ok(.4)?'CLEAN':'ARTIFACTS',ok(.4)?'safe':'danger');
-  sm('m3',ok(.5)?'NATURAL':'IRREGULAR',ok(.5)?'safe':'flag');
-  sm('m4',isFake&&Math.random()>.3?'DETECTED':'NOT FOUND',isFake&&Math.random()>.3?'danger':'safe');
-  sm('m5',!isFake?'NATURAL':'SYNTHETIC',!isFake?'safe':'danger');
-  sm('m6','NORMAL','safe');
-  const sc=v=>v>50?'danger':'safe';
-  ['s1','s2','s3','s4'].forEach(id=>{const v=Math.max(0,Math.min(100,fc+(Math.random()-.5)*14));document.getElementById(id).textContent=v.toFixed(1)+'%';document.getElementById(id).className='mbs '+sc(v)});
-  const C=314,r=document.getElementById('radialFill');r.style.strokeDashoffset=C;
-  const col=fc>70?'#ff003c':fc>40?'#ffb700':'#39ff14';r.style.stroke=col;
-  setTimeout(()=>{r.style.strokeDashoffset=C-(fc/100*C)},100);
-  document.getElementById('threatPct').textContent=fc.toFixed(0)+'%';document.getElementById('threatPct').style.color=col;
-  document.getElementById('totalScanned').textContent=stats.total;document.getElementById('deepfakesFound').textContent=stats.fake;document.getElementById('authenticFound').textContent=stats.real;document.getElementById('avgConf').textContent=(stats.sum/stats.total).toFixed(1)+'%';
-  document.getElementById('resultsSection').classList.add('active');
-  document.getElementById('shareVerdict').textContent=isFake?t.verdict_fake:t.verdict_real;document.getElementById('shareConf').textContent=Math.max(fc,rc).toFixed(1)+'%';document.getElementById('shareTime').textContent=new Date().toLocaleString();
-  addLog('VERDICT: '+(isFake?'⚠ DEEPFAKE':'✓ AUTHENTIC'),isFake?'err':'ok');addLog('CONFIDENCE: '+Math.max(fc,rc).toFixed(1)+'%','info');addLog('COMPLETE','ok');
-  document.getElementById('previewArea').classList.add('active');document.getElementById('scanOverlay').classList.remove('active');
-}
-function sm(id,v,c){const el=document.getElementById(id);el.textContent=v;el.className='mval '+c}
-function resetAll(){
-  document.getElementById('previewArea').classList.remove('active');document.getElementById('uploadZone').style.display='';
-  document.querySelector('.tab-row').style.display='flex';document.getElementById('analyzingState').classList.remove('active');
-  document.getElementById('resultsSection').classList.remove('active');document.getElementById('resultsEmpty').style.display='';
-  document.getElementById('fileInput').value='';document.getElementById('previewImg').style.display='none';document.getElementById('previewVid').style.display='none';
-  document.getElementById('radialFill').style.strokeDashoffset='314';document.getElementById('threatPct').textContent='—';lastR=null;addLog('RESET','warn');
-}
-function openShareModal(){document.getElementById('shareModal').classList.add('active')}
-function closeShareModal(){document.getElementById('shareModal').classList.remove('active')}
-function copyLink(){const i=document.getElementById('shareLinkInput');navigator.clipboard.writeText(i.value).then(()=>showToast(T[lang].copied||'COPIED!')).catch(()=>{i.select();document.execCommand('copy');showToast(T[lang].copied||'COPIED!')})}
-function shareWA(){const v=document.getElementById('shareVerdict').textContent,c=document.getElementById('shareConf').textContent;window.open(`https://wa.me/?text=${encodeURIComponent(`🔍 VERIDEX\nVerdict: ${v}\nConf: ${c}\nhttps://veridex-detector.netlify.app`)}`,'_blank')}
-function shareTW(){const v=document.getElementById('shareVerdict').textContent,c=document.getElementById('shareConf').textContent;window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🔍 VERIDEX: ${v} (${c})`)}&url=https://veridex-detector.netlify.app`,'_blank')}
-function downloadResult(){const v=document.getElementById('shareVerdict').textContent,c=document.getElementById('shareConf').textContent,tm=document.getElementById('shareTime').textContent;const blob=new Blob([`VERIDEX v3.7\nVERDICT: ${v}\nCONFIDENCE: ${c}\nTIMESTAMP: ${tm}\nURL: https://veridex-detector.netlify.app\n`],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`veridex-${Date.now()}.txt`;a.click();showToast(T[lang].downloaded||'DOWNLOADED!')}
-const zone=document.getElementById('uploadZone');
-zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragover')});
-zone.addEventListener('dragleave',()=>zone.classList.remove('dragover'));
-zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fileInput').files=dt.files;handleFile(document.getElementById('fileInput'))}});
-document.getElementById('shareModal').addEventListener('click',function(e){if(e.target===this)closeShareModal()});
+btn.addEventListener('click', () => applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+applyTheme(localStorage.getItem('vx_theme') || 'dark');
+
+/* ─── MOBILE MENU ─── */
+document.getElementById('hbg').addEventListener('click', () => {
+  document.getElementById('mobMenu').classList.toggle('on');
+});
+
+/* ─── SCROLL REVEAL ─── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.style.animation='riseIn .6s ease both'; });
+}, {threshold:.1});
+document.querySelectorAll('.step-card,.sig-card').forEach(el => {
+  el.style.opacity='0'; io.observe(el);
+});
 </script>
 </body>
 </html>
