@@ -2,1702 +2,940 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERIDEX — AI Detection Engine</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- TensorFlow.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.10.0/tf.min.js"></script>
-<!-- Face API -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — Detection Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#020b14;--panel:#040f1e;--border:#0a2040;
-  --accent:#00e5ff;--accent2:#ff003c;--accent3:#39ff14;--warn:#ffb700;
-  --text:#b8d4f0;--muted:#2a4060;--muted2:#3a5878;
-  --shadow:0 8px 32px rgba(0,0,0,0.7);
+:root {
+  --bg: #03070f;
+  --bg2: #060c18;
+  --bg3: #0a1220;
+  --border: rgba(0,210,255,.10);
+  --border2: rgba(0,210,255,.20);
+  --c: #00d2ff;
+  --c2: #ff1f4e;
+  --c3: #00ff88;
+  --warn: #ffb700;
+  --text: #c5ddf5;
+  --muted: #2d4a68;
+  --muted2: #4a6880;
+  --display: 'Bebas Neue', sans-serif;
+  --mono: 'Share Tech Mono', monospace;
+  --body: 'Rajdhani', sans-serif;
+}
+[data-theme="light"] {
+  --bg: #eef3fc; --bg2: #f8faff; --bg3: #fff;
+  --border: rgba(0,140,200,.12); --border2: rgba(0,140,200,.25);
+  --c: #0088cc; --c2: #e0003c; --c3: #007744;
+  --text: #0d1e38; --muted: #b0c4d8; --muted2: #6080a0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);background-size:40px 40px}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(0,100,200,0.08) 0%,transparent 60%)}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--body);min-height:100vh;overflow-x:hidden;
+  transition:background .3s,color .3s;
+}
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(0,210,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,210,255,.025) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+[data-theme="light"] .bg-grid{
+  background:
+    linear-gradient(rgba(0,100,180,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,100,180,.04) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+.bg-glow{
+  position:fixed;top:-150px;left:50%;transform:translateX(-50%);
+  width:800px;height:400px;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse,rgba(0,100,220,.07) 0%,transparent 70%);
+}
 
-.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 60px}
+/* ─── TOPBAR ─── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:60px;
+  background:rgba(3,7,15,.82);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+[data-theme="light"] .topbar{background:rgba(238,243,252,.88)}
+.tlogo{
+  font-family:var(--display);font-size:20px;letter-spacing:6px;color:var(--c);
+  text-shadow:0 0 20px rgba(0,210,255,.4);text-decoration:none;
+}
+.tright{display:flex;align-items:center;gap:8px}
+.spill{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:8px;letter-spacing:2px;
+  padding:5px 12px;border:1px solid rgba(0,255,136,.18);
+  color:var(--c3);background:rgba(0,255,136,.03);
+}
+.spill-dot{width:5px;height:5px;border-radius:50%;background:var(--c3);
+  box-shadow:0 0 7px var(--c3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ibtn{
+  font-family:var(--mono);font-size:8px;letter-spacing:2px;
+  padding:6px 13px;border:1px solid var(--border2);color:var(--muted2);
+  background:none;cursor:pointer;transition:all .2s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.ibtn:hover{border-color:var(--c);color:var(--c)}
+.theme-btn{
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid var(--border2);background:none;
+  color:var(--muted2);cursor:pointer;font-size:12px;
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.theme-btn:hover{border-color:var(--c);color:var(--c)}
 
-/* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:22px 0 18px;border-bottom:1px solid var(--border);margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.hlogo{font-family:'Orbitron',monospace;font-size:clamp(18px,3vw,24px);font-weight:900;color:var(--accent);letter-spacing:4px}
-.hsub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:3px;margin-top:2px}
-.hright{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.engine-badge{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:5px 12px;border:1px solid var(--accent3);color:var(--accent3);background:rgba(57,255,20,0.05)}
-.back-btn{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:2px;text-decoration:none;border:1px solid var(--border);padding:6px 12px;transition:all .2s;background:none;cursor:pointer}
-.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* ─── MAIN GRID ─── */
+.shell{position:relative;z-index:1}
+.grid{display:grid;grid-template-columns:1fr 284px;min-height:calc(100vh - 60px)}
+.main-col{padding:28px 28px 48px 32px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:20px}
+.side-col{padding:20px 20px 48px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
 
-/* MODEL LOADER */
-.model-loader{background:var(--panel);border:1px solid var(--border);padding:20px;margin-bottom:24px;position:relative;overflow:hidden}
-.model-loader::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.4}
-.ml-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:14px}
-.ml-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.ml-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:rgba(0,0,0,.2)}
-.ml-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:all .3s}
-.ml-dot.loading{background:var(--warn);box-shadow:0 0 8px var(--warn);animation:blink .8s infinite}
-.ml-dot.ready{background:var(--accent3);box-shadow:0 0 8px var(--accent3)}
-.ml-dot.error{background:var(--accent2);box-shadow:0 0 8px var(--accent2)}
-.ml-dot.idle{background:var(--muted);box-shadow:none}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.ml-name{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);letter-spacing:1px}
-.ml-status{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:2px}
+/* ─── LABELS ─── */
+.lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--muted2);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.lbl::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* MAIN GRID */
-.main-grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+/* ─── UPLOAD ─── */
+.drop-zone{
+  border:1px dashed rgba(0,210,255,.18);padding:48px 20px;
+  text-align:center;cursor:pointer;transition:all .3s;
+  background:rgba(0,210,255,.01);position:relative;overflow:hidden;
+}
+.drop-zone:hover,.drop-zone.drag{border-color:rgba(0,210,255,.5);background:rgba(0,210,255,.03)}
+.dz-corner{position:absolute;width:10px;height:10px}
+.dz-corner.tl{top:7px;left:7px;border-top:1px solid var(--c);border-left:1px solid var(--c)}
+.dz-corner.tr{top:7px;right:7px;border-top:1px solid var(--c);border-right:1px solid var(--c)}
+.dz-corner.bl{bottom:7px;left:7px;border-bottom:1px solid var(--c);border-left:1px solid var(--c)}
+.dz-corner.br{bottom:7px;right:7px;border-bottom:1px solid var(--c);border-right:1px solid var(--c)}
+.dz-icon{
+  width:50px;height:50px;margin:0 auto 16px;
+  border:1px solid rgba(0,210,255,.18);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,210,255,.04);
+}
+.dz-icon svg{width:20px;height:20px;stroke:var(--c);opacity:.8}
+.dz-title{font-family:var(--display);font-size:18px;letter-spacing:4px;color:var(--c);margin-bottom:6px}
+.dz-sub{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted2);margin-bottom:20px;line-height:1.9}
+.dz-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:2px;
+  padding:9px 22px;border:1px solid var(--c);color:var(--c);
+  background:rgba(0,210,255,.05);cursor:pointer;transition:.25s;
+}
+.dz-btn:hover{background:rgba(0,210,255,.14);box-shadow:0 0 18px rgba(0,210,255,.18)}
 
-/* PANEL */
-.panel{background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:var(--shadow)}
-.panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
-.ph{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
-.ph-title{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--accent)}
-.phdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+/* ─── PREVIEW ─── */
+.preview-wrap{display:none;flex-direction:column;gap:12px}
+.preview-wrap.on{display:flex}
+.preview-frame{
+  border:1px solid var(--border2);background:#000;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;min-height:200px;
+}
+.preview-frame img{max-width:100%;max-height:320px;object-fit:contain;display:block}
+.hm-cv{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s}
+.hm-cv.on{opacity:.65}
+.scan-line{
+  position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c),transparent);
+  box-shadow:0 0 8px var(--c);
+  animation:scanAnim 1.1s linear infinite;display:none;
+}
+.scan-line.on{display:block}
+@keyframes scanAnim{0%{top:0}100%{top:100%}}
+.f-corner{position:absolute;width:9px;height:9px}
+.f-corner.tl{top:5px;left:5px;border-top:1px solid var(--c);border-left:1px solid var(--c)}
+.f-corner.tr{top:5px;right:5px;border-top:1px solid var(--c);border-right:1px solid var(--c)}
+.f-corner.bl{bottom:5px;left:5px;border-bottom:1px solid var(--c);border-left:1px solid var(--c)}
+.f-corner.br{bottom:5px;right:5px;border-bottom:1px solid var(--c);border-right:1px solid var(--c)}
+.act-row{display:flex;gap:8px;flex-wrap:wrap}
+.abtn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:2px;
+  padding:8px 18px;border:1px solid var(--c);color:var(--c);
+  background:rgba(0,210,255,.04);cursor:pointer;transition:.2s;
+}
+.abtn:hover{background:rgba(0,210,255,.12);box-shadow:0 0 14px rgba(0,210,255,.18)}
+.abtn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.abtn.red{border-color:var(--c2);color:var(--c2);background:rgba(255,31,78,.02)}
+.abtn.red:hover{background:rgba(255,31,78,.1)}
+.abtn.sm{padding:6px 12px;font-size:7px}
 
-/* UPLOAD */
-.upload-zone{margin:16px;border:1px dashed var(--muted2);padding:40px 20px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(0,229,255,.01);position:relative}
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(0,229,255,.04);box-shadow:inset 0 0 40px rgba(0,229,255,.04)}
-.upload-zone::before{content:'';position:absolute;inset:7px;border:1px dashed rgba(0,229,255,.06);pointer-events:none}
-.upload-icon svg{width:50px;height:50px;stroke:var(--accent);opacity:.7;filter:drop-shadow(0 0 8px rgba(0,229,255,.3));display:block;margin:0 auto 14px}
-.upload-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:5px}
-.upload-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;margin-bottom:18px}
+/* ─── PIPELINE ─── */
+.pipe-wrap{display:none;flex-direction:column;gap:3px}
+.pipe-wrap.on{display:flex}
+.prow{
+  display:flex;align-items:center;gap:9px;
+  padding:7px 10px;border-left:2px solid rgba(255,255,255,.05);
+  transition:all .2s;
+}
+.prow.run{border-left-color:var(--c);background:rgba(0,210,255,.03)}
+.prow.done{border-left-color:var(--c3)}
+.pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:var(--muted);transition:.3s}
+.prow.run .pdot{background:var(--c);box-shadow:0 0 7px var(--c);animation:blink .55s infinite}
+.prow.done .pdot{background:var(--c3);box-shadow:0 0 5px var(--c3);animation:none}
+.pname{font-family:var(--mono);font-size:8px;letter-spacing:1px;flex:1}
+.prow.idle .pname{color:var(--muted2)}
+.prow.run .pname{color:var(--c)}
+.prow.done .pname{color:var(--text)}
+.pval{font-family:var(--display);font-size:14px;letter-spacing:1px;color:var(--muted)}
+.prow.run .pval{color:var(--c)}
+.prow.done .pval{color:var(--c3)}
 
-/* PREVIEW */
-.preview-area{margin:16px;display:none}
-.preview-area.active{display:block}
-.preview-frame{border:1px solid var(--border);background:#000;position:relative;margin-bottom:12px;display:flex;align-items:center;justify-content:center;min-height:200px;overflow:hidden}
-.preview-frame canvas{display:block;max-width:100%}
-.preview-frame img{max-width:100%;max-height:300px;object-fit:contain;display:block}
-.scan-overlay{position:absolute;inset:0;pointer-events:none;display:none}
-.scan-overlay.active{display:block}
-.sline{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 10px var(--accent);animation:scandown 1.5s linear infinite}
-@keyframes scandown{0%{top:0}100%{top:100%}}
-.corner{position:absolute;width:14px;height:14px}
-.corner.tl{top:6px;left:6px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)}
-.corner.tr{top:6px;right:6px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)}
-.corner.bl{bottom:6px;left:6px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)}
-.corner.br{bottom:6px;right:6px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)}
+/* ─── VERDICT ─── */
+.verdict-wrap{display:none}
+.verdict-wrap.on{display:block}
+.v-card{
+  padding:24px;border:1px solid var(--border2);
+  position:relative;overflow:hidden;margin-bottom:14px;
+}
+.v-card.fake{border-color:rgba(255,31,78,.4);background:rgba(255,31,78,.025)}
+.v-card.fake::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--c2),transparent)}
+.v-card.real{border-color:rgba(0,255,136,.28);background:rgba(0,255,136,.015)}
+.v-card.real::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--c3),transparent)}
+.v-eyebrow{font-family:var(--mono);font-size:7px;letter-spacing:4px;color:var(--muted2);margin-bottom:8px}
+.v-title{font-family:var(--display);font-size:clamp(26px,5vw,42px);letter-spacing:5px;line-height:1}
+.v-title.fake{color:var(--c2);text-shadow:0 0 28px rgba(255,31,78,.4)}
+.v-title.real{color:var(--c3);text-shadow:0 0 24px rgba(0,255,136,.3)}
+.v-meta{font-family:var(--mono);font-size:8px;color:var(--muted2);letter-spacing:2px;margin-top:8px}
 
-/* HEATMAP OVERLAY */
-.heatmap-canvas{position:absolute;inset:0;opacity:.6;display:none;pointer-events:none}
-.heatmap-canvas.active{display:block}
+.conf-block{margin-bottom:10px}
+.conf-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.conf-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2)}
+.conf-pct{font-family:var(--display);font-size:16px;font-weight:700}
+.conf-track{height:3px;background:rgba(255,255,255,.05);overflow:hidden}
+.conf-fill{height:100%;transition:width 1.1s cubic-bezier(.16,1,.3,1)}
+.conf-fill.red{background:linear-gradient(90deg,#ff1f4e,#ff6080)}
+.conf-fill.grn{background:linear-gradient(90deg,#00ff88,#80ffb0)}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;overflow:hidden}
-.btn::before{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:.2s}
-.btn:hover::before{opacity:.08}
-.btn:hover{box-shadow:0 0 16px rgba(0,229,255,.3)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn.danger{border-color:var(--accent2);color:var(--accent2)}
-.btn.danger::before{background:var(--accent2)}
-.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--muted);margin-bottom:12px}
+.fg-cell{background:var(--bg2);padding:8px 10px}
+.fg-n{font-family:var(--mono);font-size:7px;letter-spacing:1px;color:var(--muted2);margin-bottom:2px}
+.fg-v{font-family:var(--mono);font-size:8px;font-weight:700}
+.fg-v.safe{color:var(--c3)}.fg-v.flag{color:var(--warn)}.fg-v.hot{color:var(--c2)}
 
-/* ANALYSIS STEPS */
-.analysis-steps{display:none;margin:0 16px 16px}
-.analysis-steps.active{display:block}
-.step{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:6px;border:1px solid var(--border);background:rgba(0,0,0,.2);transition:all .3s}
-.step.running{border-color:var(--accent);background:rgba(0,229,255,.03)}
-.step.done{border-color:var(--accent3);background:rgba(57,255,20,.03)}
-.step.error{border-color:var(--accent2)}
-.step-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.step.running .step-dot{background:var(--accent);animation:blink .6s infinite}
-.step.done .step-dot{background:var(--accent3)}
-.step.idle .step-dot{background:var(--muted)}
-.step-name{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px}
-.step.running .step-name{color:var(--accent)}
-.step.done .step-name{color:var(--accent3)}
-.step.idle .step-name{color:var(--muted2)}
-.step-val{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;margin-left:auto}
+.exp-box{border:1px solid var(--border);padding:14px;background:rgba(0,210,255,.01);display:none}
+.exp-box.on{display:block}
+.exp-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--c);margin-bottom:10px}
+.exp-item{display:flex;gap:7px;margin-bottom:6px;align-items:flex-start}
+.exp-dot{width:3px;height:3px;border-radius:50%;background:var(--c);margin-top:5px;flex-shrink:0}
+.exp-text{font-family:var(--mono);font-size:8px;color:var(--muted2);line-height:1.7}
 
-/* RESULTS */
-.results-section{margin:16px;display:none}
-.results-section.active{display:block}
-.verdict-box{padding:20px;border:1px solid var(--border);margin-bottom:16px;text-align:center;position:relative}
-.verdict-box.real{border-color:var(--accent3);box-shadow:0 0 30px rgba(57,255,20,.1)}
-.verdict-box.fake{border-color:var(--accent2);box-shadow:0 0 30px rgba(255,0,60,.15)}
-.verdict-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--muted2);margin-bottom:8px}
-.verdict-text{font-family:'Orbitron',monospace;font-size:clamp(22px,5vw,36px);font-weight:900;letter-spacing:4px}
-.verdict-text.real{color:var(--accent3);text-shadow:0 0 20px rgba(57,255,20,.5)}
-.verdict-text.fake{color:var(--accent2);text-shadow:0 0 20px rgba(255,0,60,.5)}
-.verdict-score{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-top:6px;letter-spacing:2px}
+/* ─── SIDEBAR ─── */
+.sc{border:1px solid var(--border);background:var(--bg2);overflow:hidden}
+.sc-h{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.12)}
+.sc-dot{width:5px;height:5px;border-radius:50%}
+.sc-title{font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--muted2)}
 
-/* CONFIDENCE BARS */
-.cblock{margin-bottom:12px}
-.crow{display:flex;justify-content:space-between;margin-bottom:4px}
-.clabel{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted2)}
-.cpct{font-family:'Orbitron',monospace;font-size:11px;font-weight:700}
-.cbar{height:5px;background:var(--border);overflow:hidden}
-.cfill{height:100%;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
-.cfill.fake-fill{background:linear-gradient(90deg,#ff003c,#ff6b8a)}
-.cfill.real-fill{background:linear-gradient(90deg,#39ff14,#7fff5f)}
+.gauge-box{display:flex;flex-direction:column;align-items:center;padding:14px 0 8px}
+.g-wrap{position:relative;width:96px;height:96px}
+.gsvg{width:96px;height:96px;transform:rotate(-90deg)}
+.g-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:7}
+.g-fill{
+  fill:none;stroke-width:7;stroke-linecap:butt;
+  stroke-dasharray:219;stroke-dashoffset:219;
+  transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1),stroke .4s;
+}
+.g-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.g-num{font-family:var(--display);font-size:22px;letter-spacing:1px}
+.g-sub{font-family:var(--mono);font-size:6px;letter-spacing:3px;color:var(--muted2)}
 
-/* FORENSIC METRICS */
-.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:14px}
-.mcell{background:var(--panel);padding:10px 12px}
-.mname{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);margin-bottom:3px}
-.mval{font-family:'Orbitron',monospace;font-size:10px;font-weight:700}
-.mval.safe{color:var(--accent3)}.mval.flag{color:var(--warn)}.mval.danger{color:var(--accent2)}
-.mval.na{color:var(--muted2)}
+.sig-r{display:flex;align-items:center;gap:7px;padding:6px 12px;border-bottom:1px solid var(--border)}
+.sig-r:last-child{border-bottom:none}
+.sig-n{font-family:var(--mono);font-size:7px;color:var(--muted2);flex:1;letter-spacing:.5px}
+.sig-bw{width:52px;height:2px;background:rgba(255,255,255,.05)}
+.sig-b{height:100%;transition:width .7s ease}
+.sig-p{font-family:var(--display);font-size:12px;width:32px;text-align:right}
 
-/* SIDEBAR */
-.sidebar{display:flex;flex-direction:column;gap:16px}
+.stat-r{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border)}
+.stat-r:last-child{border-bottom:none}
+.stat-l{font-family:var(--mono);font-size:7px;color:var(--muted2);letter-spacing:1px}
+.stat-v{font-family:var(--display);font-size:15px}
 
-/* THREAT RADIAL */
-.rwrap{position:relative;width:100px;height:100px;margin:0 auto 10px}
-.rsvg{width:100px;height:100px;transform:rotate(-90deg)}
-.rbg{fill:none;stroke:var(--border);stroke-width:8}
-.rfill{fill:none;stroke-width:8;stroke-linecap:butt;transition:stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1),stroke .5s}
-.rtext{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;text-align:center}
-.rsub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:2px;text-align:center}
+.log-wrap{max-height:160px;overflow-y:auto;padding:4px 0}
+.log-wrap::-webkit-scrollbar{width:2px}
+.log-wrap::-webkit-scrollbar-thumb{background:var(--muted)}
+.log-e{display:flex;gap:7px;padding:3px 10px}
+.log-t{font-family:var(--mono);font-size:7px;color:var(--muted);white-space:nowrap;margin-top:1px}
+.log-m{font-family:var(--mono);font-size:8px;line-height:1.5}
+.log-m.ok{color:var(--c3)}.log-m.w{color:var(--warn)}.log-m.e{color:var(--c2)}.log-m.i{color:var(--c)}
 
-/* MODEL SCORES */
-.mbadge{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(0,229,255,.01);border:1px solid var(--border);border-left:2px solid var(--accent);margin-bottom:6px}
-.mbn{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text)}
-.mbs{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--muted2)}
-.mbs.danger{color:var(--accent2)}.mbs.safe{color:var(--accent3)}
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  padding:10px 22px;background:var(--bg3);border:1px solid var(--c);color:var(--c);
+  z-index:999;transition:transform .3s;pointer-events:none;
+}
+.toast.on{transform:translateX(-50%) translateY(0)}
 
-/* LOG */
-.loglist{padding:8px;max-height:200px;overflow-y:auto;background:rgba(0,0,0,.2)}
-.loglist::-webkit-scrollbar{width:3px}
-.loglist::-webkit-scrollbar-thumb{background:var(--muted)}
-.lentry{display:flex;gap:8px;padding:4px 6px;border-bottom:1px solid rgba(10,32,64,.3);animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateX(-3px)}to{opacity:1;transform:none}}
-.ltime{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);white-space:nowrap}
-.lmsg{font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.5}
-.lmsg.ok{color:var(--accent3)}.lmsg.warn{color:var(--warn)}.lmsg.err{color:var(--accent2)}.lmsg.info{color:var(--accent)}
-
-/* EXPLANATION BOX */
-.explanation-box{margin:0 16px 16px;background:rgba(0,229,255,.02);border:1px solid var(--border);padding:14px;display:none}
-.explanation-box.active{display:block}
-.exp-title{font-family:'Orbitron',monospace;font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px}
-.exp-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
-.exp-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:4px;flex-shrink:0}
-.exp-text{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);line-height:1.5}
-
-/* STAT ROWS */
-.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)}
-.slabel{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2)}
-.sval{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent)}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--panel);border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:12px 24px;z-index:99999;transition:transform .3s;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0)}
-
-/* RESPONSIVE */
-@media(max-width:820px){.main-grid{grid-template-columns:1fr}.sidebar{flex-direction:row;flex-wrap:wrap}.sidebar .panel{flex:1;min-width:240px}}
-@media(max-width:500px){.action-row{flex-direction:column}.btn{justify-content:center}.metrics-grid{grid-template-columns:1fr}}
-#fileInput{display:none}
+/* ─── RESPONSIVE ─── */
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .side-col{border-top:1px solid var(--border)}
+  .main-col{padding:20px 16px 40px}
+  .side-col{padding:16px 16px 40px}
+}
+#fileIn,#wkCv{display:none}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
 
-<!-- HEADER -->
-<header>
+<div class="topbar">
+  <a href="index.html" class="tlogo">VERIDEX</a>
+  <div class="tright">
+    <div class="spill"><div class="spill-dot"></div><span id="statusLbl">LOADING</span></div>
+    <button class="ibtn" onclick="toggleHeatmap()">🔥 HEATMAP</button>
+    <a class="ibtn" href="dashboard.html">📊</a>
+    <a class="ibtn" href="index.html">← HOME</a>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<div class="shell">
+<div class="grid">
+
+<!-- MAIN COL -->
+<div class="main-col">
+
+  <!-- UPLOAD -->
   <div>
-    <div class="hlogo">VERIDEX</div>
-    <div class="hsub">REAL-TIME FORENSIC DETECTION ENGINE v4.0</div>
+    <div class="lbl">INPUT IMAGE</div>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileIn').click()">
+      <div class="dz-corner tl"></div><div class="dz-corner tr"></div>
+      <div class="dz-corner bl"></div><div class="dz-corner br"></div>
+      <div class="dz-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="1"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M3 15l5-5 4 4 3-3 6 6"/>
+        </svg>
+      </div>
+      <div class="dz-title">DROP IMAGE</div>
+      <div class="dz-sub">PNG · JPG · WEBP<br>100% BROWSER — NOTHING UPLOADED</div>
+      <div class="dz-btn">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        SELECT FILE
+      </div>
+    </div>
+    <input type="file" id="fileIn" accept="image/*" onchange="loadFile(this)">
   </div>
-  <div class="hright">
-    <div class="engine-badge" id="engineBadge">⟳ LOADING ENGINE...</div>
-    <a class="back-btn" href="index.html">← MAIN APP</a>
-  </div>
-</header>
 
-<!-- MODEL STATUS -->
-<div class="model-loader">
-  <div class="ml-title">🧠 DETECTION ENGINE STATUS</div>
-  <div class="ml-grid">
-    <div class="ml-item">
-      <div class="ml-dot loading" id="dot1"></div>
-      <div><div class="ml-name">PIXEL FORENSICS</div><div class="ml-status" id="st1">Initializing...</div></div>
+  <!-- PREVIEW -->
+  <div class="preview-wrap" id="prevWrap">
+    <div class="lbl">PREVIEW</div>
+    <div class="preview-frame" id="prevFrame">
+      <img id="prevImg" src="" alt="">
+      <canvas id="hmCv" class="hm-cv"></canvas>
+      <div class="scan-line" id="scanLine"></div>
+      <div class="f-corner tl"></div><div class="f-corner tr"></div>
+      <div class="f-corner bl"></div><div class="f-corner br"></div>
     </div>
-    <div class="ml-item">
-      <div class="ml-dot idle" id="dot2"></div>
-      <div><div class="ml-name">FREQUENCY ANALYSIS (FFT)</div><div class="ml-status" id="st2">Waiting...</div></div>
-    </div>
-    <div class="ml-item">
-      <div class="ml-dot idle" id="dot3"></div>
-      <div><div class="ml-name">NOISE PATTERN ENGINE</div><div class="ml-status" id="st3">Waiting...</div></div>
-    </div>
-    <div class="ml-item">
-      <div class="ml-dot idle" id="dot4"></div>
-      <div><div class="ml-name">FACE LANDMARK DETECTOR</div><div class="ml-status" id="st4">Waiting...</div></div>
-    </div>
-    <div class="ml-item">
-      <div class="ml-dot idle" id="dot5"></div>
-      <div><div class="ml-name">COLOR CONSISTENCY</div><div class="ml-status" id="st5">Waiting...</div></div>
-    </div>
-    <div class="ml-item">
-      <div class="ml-dot idle" id="dot6"></div>
-      <div><div class="ml-name">COMPRESSION ARTIFACT</div><div class="ml-status" id="st6">Waiting...</div></div>
-    </div>
-  </div>
-</div>
-
-<div class="main-grid">
-  <div style="display:flex;flex-direction:column;gap:16px">
-
-    <!-- UPLOAD -->
-    <div class="panel">
-      <div class="ph"><div class="phdot"></div><div class="ph-title">MEDIA INPUT</div></div>
-
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">
-          <svg viewBox="0 0 64 64" fill="none" stroke-width="1.5"><rect x="4" y="12" width="56" height="40" rx="2"/><circle cx="20" cy="28" r="6"/><path d="M4 40 L20 26 L34 36 L44 26 L60 40"/><path d="M32 4 L32 12 M28 8 L32 4 L36 8"/></svg>
-        </div>
-        <div class="upload-title">UPLOAD IMAGE / VIDEO</div>
-        <div class="upload-sub">PNG · JPG · WEBP · MP4 · Real forensic analysis</div>
-        <button class="btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          SELECT FILE
-        </button>
-      </div>
-      <input type="file" id="fileInput" accept="image/*,video/*" onchange="handleFile(this)">
-
-      <!-- PREVIEW -->
-      <div class="preview-area" id="previewArea">
-        <div class="preview-frame" id="previewFrame">
-          <img id="previewImg" src="" alt="" style="display:none">
-          <canvas id="analysisCanvas" style="display:none;max-width:100%"></canvas>
-          <canvas id="heatmapCanvas" class="heatmap-canvas" id="heatmapCanvas"></canvas>
-          <div class="scan-overlay" id="scanOverlay">
-            <div class="sline"></div>
-            <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-          </div>
-        </div>
-        <div class="action-row">
-          <button class="btn" id="analyzeBtn" onclick="startRealAnalysis()">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3M6.343 6.343l-.707-.707M6.343 17.657l-.707.707M15.657 6.343l.707-.707M15.657 17.657l.707.707"/></svg>
-            ANALYZE NOW
-          </button>
-          <button class="btn" id="heatmapBtn" onclick="toggleHeatmap()" style="display:none">
-            🔥 HEATMAP
-          </button>
-          <button class="btn danger" onclick="resetAll()">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 3v6h6"/></svg>
-            RESET
-          </button>
-        </div>
-      </div>
-
-      <!-- ANALYSIS STEPS -->
-      <div class="analysis-steps" id="analysisSteps">
-        <div class="step idle" id="step1"><div class="step-dot"></div><div class="step-name">PIXEL &amp; NOISE FORENSICS</div><div class="step-val" id="sv1">—</div></div>
-        <div class="step idle" id="step2"><div class="step-dot"></div><div class="step-name">FFT FREQUENCY DOMAIN</div><div class="step-val" id="sv2">—</div></div>
-        <div class="step idle" id="step3"><div class="step-dot"></div><div class="step-name">ELA COMPRESSION ANALYSIS</div><div class="step-val" id="sv3">—</div></div>
-        <div class="step idle" id="step4"><div class="step-dot"></div><div class="step-name">SKIN &amp; FACE TEXTURE</div><div class="step-val" id="sv4">—</div></div>
-        <div class="step idle" id="step5"><div class="step-dot"></div><div class="step-name">COLOR CHANNEL FORENSICS</div><div class="step-val" id="sv5">—</div></div>
-        <div class="step idle" id="step6"><div class="step-dot"></div><div class="step-name">ANATOMY: HANDS &amp; FINGERS</div><div class="step-val" id="sv6">—</div></div>
-        <div class="step idle" id="step7"><div class="step-dot"></div><div class="step-name">LIGHTING &amp; SHADOW PHYSICS</div><div class="step-val" id="sv7">—</div></div>
-        <div class="step idle" id="step8"><div class="step-dot"></div><div class="step-name">BACKGROUND COHERENCE</div><div class="step-val" id="sv8">—</div></div>
-        <div class="step idle" id="step9"><div class="step-dot"></div><div class="step-name">TEXT &amp; GEOMETRY CHECK</div><div class="step-val" id="sv9">—</div></div>
-        <div class="step idle" id="step10"><div class="step-dot"></div><div class="step-name">ENSEMBLE VERDICT</div><div class="step-val" id="sv10">—</div></div>
-      </div>
-
-      <!-- RESULTS -->
-      <div class="results-section" id="resultsSection">
-        <div class="verdict-box" id="verdictBox">
-          <div class="verdict-label">FORENSIC VERDICT</div>
-          <div class="verdict-text" id="verdictText">—</div>
-          <div class="verdict-score" id="verdictScore">—</div>
-        </div>
-        <div style="padding:0 0 14px">
-          <div class="cblock">
-            <div class="crow"><div class="clabel">DEEPFAKE PROBABILITY</div><div class="cpct" id="fakePct" style="color:var(--accent2)">0%</div></div>
-            <div class="cbar"><div class="cfill fake-fill" id="fakeFill" style="width:0%"></div></div>
-          </div>
-          <div class="cblock">
-            <div class="crow"><div class="clabel">AUTHENTICITY SCORE</div><div class="cpct" id="realPct" style="color:var(--accent3)">0%</div></div>
-            <div class="cbar"><div class="cfill real-fill" id="realFill" style="width:0%"></div></div>
-          </div>
-        </div>
-        <div class="metrics-grid">
-          <div class="mcell"><div class="mname">PIXEL ANOMALY</div><div class="mval" id="m1">—</div></div>
-          <div class="mcell"><div class="mname">FREQ. ARTIFACTS</div><div class="mval" id="m2">—</div></div>
-          <div class="mcell"><div class="mname">ELA NOISE</div><div class="mval" id="m3">—</div></div>
-          <div class="mcell"><div class="mname">SKIN TEXTURE</div><div class="mval" id="m4">—</div></div>
-          <div class="mcell"><div class="mname">COLOR CHANNELS</div><div class="mval" id="m5">—</div></div>
-          <div class="mcell"><div class="mname">HAND ANATOMY</div><div class="mval" id="m6">—</div></div>
-          <div class="mcell"><div class="mname">LIGHT &amp; SHADOWS</div><div class="mval" id="m7">—</div></div>
-          <div class="mcell"><div class="mname">BACKGROUND</div><div class="mval" id="m8">—</div></div>
-          <div class="mcell"><div class="mname">TEXT/GEOMETRY</div><div class="mval" id="m9">—</div></div>
-          <div class="mcell"><div class="mname">COMPRESSION</div><div class="mval" id="m10">—</div></div>
-        </div>
-      </div>
-
-      <!-- EXPLANATION -->
-      <div class="explanation-box" id="explanationBox">
-        <div class="exp-title">🔍 WHY THIS VERDICT</div>
-        <div id="explanationList"></div>
-      </div>
-
+    <div class="act-row">
+      <button class="abtn" id="runBtn" onclick="runAnalysis()">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        RUN ANALYSIS
+      </button>
+      <button class="abtn red sm" onclick="resetAll()">✕ RESET</button>
     </div>
   </div>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
+  <!-- PIPELINE -->
+  <div class="pipe-wrap" id="pipeWrap">
+    <div class="lbl">FORENSIC PIPELINE</div>
+    <div class="prow idle" id="p1"><div class="pdot"></div><div class="pname">PIXEL &amp; SENSOR NOISE</div><div class="pval" id="pv1">—</div></div>
+    <div class="prow idle" id="p2"><div class="pdot"></div><div class="pname">FFT SPECTRAL PATTERN</div><div class="pval" id="pv2">—</div></div>
+    <div class="prow idle" id="p3"><div class="pdot"></div><div class="pname">ELA COMPRESSION</div><div class="pval" id="pv3">—</div></div>
+    <div class="prow idle" id="p4"><div class="pdot"></div><div class="pname">SKIN &amp; FACE TEXTURE</div><div class="pval" id="pv4">—</div></div>
+    <div class="prow idle" id="p5"><div class="pdot"></div><div class="pname">COLOR HISTOGRAM</div><div class="pval" id="pv5">—</div></div>
+    <div class="prow idle" id="p6"><div class="pdot"></div><div class="pname">HAND ANATOMY</div><div class="pval" id="pv6">—</div></div>
+    <div class="prow idle" id="p7"><div class="pdot"></div><div class="pname">LIGHTING PHYSICS</div><div class="pval" id="pv7">—</div></div>
+    <div class="prow idle" id="p8"><div class="pdot"></div><div class="pname">BACKGROUND COHERENCE</div><div class="pval" id="pv8">—</div></div>
+    <div class="prow idle" id="p9"><div class="pdot"></div><div class="pname">TEXT &amp; GEOMETRY</div><div class="pval" id="pv9">—</div></div>
+    <div class="prow idle" id="p10"><div class="pdot"></div><div class="pname">ENSEMBLE VERDICT</div><div class="pval" id="pv10">—</div></div>
+  </div>
 
-    <!-- THREAT GAUGE -->
-    <div class="panel">
-      <div class="ph"><div class="phdot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></div><div class="ph-title">THREAT LEVEL</div></div>
-      <div style="padding:16px 18px">
-        <div class="rwrap">
-          <svg class="rsvg" viewBox="0 0 120 120">
-            <circle class="rbg" cx="60" cy="60" r="50"/>
-            <circle class="rfill" id="radialFill" cx="60" cy="60" r="50" stroke="#00e5ff" stroke-dasharray="314" stroke-dashoffset="314"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <div class="rtext" id="threatPct" style="color:var(--accent)">—</div>
-            <div class="rsub">RISK</div>
-          </div>
+  <!-- VERDICT -->
+  <div class="verdict-wrap" id="verdWrap">
+    <div class="lbl">VERDICT</div>
+    <div class="v-card" id="vCard">
+      <div class="v-eyebrow">FORENSIC ANALYSIS COMPLETE</div>
+      <div class="v-title" id="vTitle">—</div>
+      <div class="v-meta" id="vMeta">—</div>
+    </div>
+    <div class="conf-block">
+      <div class="conf-row"><div class="conf-lbl">DEEPFAKE PROBABILITY</div><div class="conf-pct" id="fakePct" style="color:var(--c2)">0%</div></div>
+      <div class="conf-track"><div class="conf-fill red" id="fakeFill" style="width:0%"></div></div>
+    </div>
+    <div class="conf-block">
+      <div class="conf-row"><div class="conf-lbl">AUTHENTICITY SCORE</div><div class="conf-pct" id="realPct" style="color:var(--c3)">0%</div></div>
+      <div class="conf-track"><div class="conf-fill grn" id="realFill" style="width:0%"></div></div>
+    </div>
+    <div class="fg">
+      <div class="fg-cell"><div class="fg-n">PIXEL NOISE</div><div class="fg-v" id="m1">—</div></div>
+      <div class="fg-cell"><div class="fg-n">FFT SPECTRAL</div><div class="fg-v" id="m2">—</div></div>
+      <div class="fg-cell"><div class="fg-n">ELA</div><div class="fg-v" id="m3">—</div></div>
+      <div class="fg-cell"><div class="fg-n">SKIN TEXTURE</div><div class="fg-v" id="m4">—</div></div>
+      <div class="fg-cell"><div class="fg-n">COLOR</div><div class="fg-v" id="m5">—</div></div>
+      <div class="fg-cell"><div class="fg-n">HAND ANATOMY</div><div class="fg-v" id="m6">—</div></div>
+      <div class="fg-cell"><div class="fg-n">LIGHTING</div><div class="fg-v" id="m7">—</div></div>
+      <div class="fg-cell"><div class="fg-n">BACKGROUND</div><div class="fg-v" id="m8">—</div></div>
+      <div class="fg-cell"><div class="fg-n">TEXT/GEO</div><div class="fg-v" id="m9">—</div></div>
+      <div class="fg-cell"><div class="fg-n">ENSEMBLE</div><div class="fg-v" id="m10">—</div></div>
+    </div>
+    <div class="exp-box" id="expBox">
+      <div class="exp-lbl">WHY THIS VERDICT</div>
+      <div id="expList"></div>
+    </div>
+  </div>
+
+</div><!-- /main-col -->
+
+<!-- SIDE COL -->
+<div class="side-col">
+
+  <!-- THREAT GAUGE -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></div><div class="sc-title">THREAT INDEX</div></div>
+    <div class="gauge-box">
+      <div class="g-wrap">
+        <svg class="gsvg" viewBox="0 0 90 90">
+          <circle class="g-bg" cx="45" cy="45" r="35"/>
+          <circle class="g-fill" id="gFill" cx="45" cy="45" r="35"/>
+        </svg>
+        <div class="g-center">
+          <div class="g-num" id="gNum" style="color:var(--c)">—</div>
+          <div class="g-sub">RISK</div>
         </div>
       </div>
     </div>
-
-    <!-- SIGNAL SCORES -->
-    <div class="panel">
-      <div class="ph"><div class="phdot"></div><div class="ph-title">SIGNAL SCORES</div></div>
-      <div style="padding:10px 14px;display:flex;flex-direction:column;gap:6px">
-        <div class="mbadge"><div class="mbn">PIXEL FORENSICS</div><div class="mbs" id="s1">—</div></div>
-        <div class="mbadge"><div class="mbn">FFT ANALYSIS</div><div class="mbs" id="s2">—</div></div>
-        <div class="mbadge"><div class="mbn">ELA NOISE</div><div class="mbs" id="s3">—</div></div>
-        <div class="mbadge"><div class="mbn">SKIN TEXTURE</div><div class="mbs" id="s4">—</div></div>
-        <div class="mbadge"><div class="mbn">COLOR ANALYSIS</div><div class="mbs" id="s5">—</div></div>
-        <div class="mbadge"><div class="mbn">HAND ANATOMY</div><div class="mbs" id="s6">—</div></div>
-        <div class="mbadge"><div class="mbn">LIGHT/SHADOWS</div><div class="mbs" id="s7">—</div></div>
-        <div class="mbadge"><div class="mbn">BACKGROUND</div><div class="mbs" id="s8">—</div></div>
-        <div class="mbadge"><div class="mbn">TEXT/GEOMETRY</div><div class="mbs" id="s9">—</div></div>
-        <div class="mbadge"><div class="mbn">COMPRESSION</div><div class="mbs" id="s10">—</div></div>
-      </div>
-    </div>
-
-    <!-- SESSION -->
-    <div class="panel">
-      <div class="ph"><div class="phdot" style="background:var(--accent3);box-shadow:0 0 6px var(--accent3)"></div><div class="ph-title">SESSION</div></div>
-      <div class="srow"><div class="slabel">TOTAL SCANNED</div><div class="sval" id="statTotal">0</div></div>
-      <div class="srow"><div class="slabel">DEEPFAKES</div><div class="sval" style="color:var(--accent2)" id="statFake">0</div></div>
-      <div class="srow"><div class="slabel">AUTHENTIC</div><div class="sval" style="color:var(--accent3)" id="statReal">0</div></div>
-    </div>
-
-    <!-- LOG -->
-    <div class="panel">
-      <div class="ph"><div class="phdot" style="background:var(--muted2)"></div><div class="ph-title">ANALYSIS LOG</div></div>
-      <div class="loglist" id="logList">
-        <div class="lentry"><div class="ltime">00:00</div><div class="lmsg ok">ENGINE STARTING...</div></div>
-      </div>
-    </div>
-
   </div>
-</div>
-</div>
+
+  <!-- SIGNAL SCORES -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--c);box-shadow:0 0 5px var(--c)"></div><div class="sc-title">SIGNAL SCORES</div></div>
+    <div class="sig-r"><div class="sig-n">PIXEL</div><div class="sig-bw"><div class="sig-b" id="sb1" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp1" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">FFT</div><div class="sig-bw"><div class="sig-b" id="sb2" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp2" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">ELA</div><div class="sig-bw"><div class="sig-b" id="sb3" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp3" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">SKIN</div><div class="sig-bw"><div class="sig-b" id="sb4" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp4" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">COLOR</div><div class="sig-bw"><div class="sig-b" id="sb5" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp5" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">HANDS</div><div class="sig-bw"><div class="sig-b" id="sb6" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp6" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">LIGHT</div><div class="sig-bw"><div class="sig-b" id="sb7" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp7" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">BG</div><div class="sig-bw"><div class="sig-b" id="sb8" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp8" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">TEXT/GEO</div><div class="sig-bw"><div class="sig-b" id="sb9" style="width:0%;background:var(--c)"></div></div><div class="sig-p" id="sp9" style="color:var(--muted2)">—</div></div>
+  </div>
+
+  <!-- SESSION -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--c3);box-shadow:0 0 5px var(--c3)"></div><div class="sc-title">SESSION STATS</div></div>
+    <div class="stat-r"><div class="stat-l">TOTAL SCANNED</div><div class="stat-v" id="sTotal" style="color:var(--c)">0</div></div>
+    <div class="stat-r"><div class="stat-l">DEEPFAKES</div><div class="stat-v" id="sFake" style="color:var(--c2)">0</div></div>
+    <div class="stat-r"><div class="stat-l">AUTHENTIC</div><div class="stat-v" id="sReal" style="color:var(--c3)">0</div></div>
+  </div>
+
+  <!-- LOG -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--muted)"></div><div class="sc-title">SYSTEM LOG</div></div>
+    <div class="log-wrap" id="logWrap">
+      <div class="log-e"><div class="log-t">--:--</div><div class="log-m i">BOOT SEQUENCE...</div></div>
+    </div>
+  </div>
+
+</div><!-- /side-col -->
+</div><!-- /grid -->
+</div><!-- /shell -->
 
 <div class="toast" id="toast"></div>
-
-<!-- Hidden canvas for processing -->
-<canvas id="workCanvas" style="display:none"></canvas>
+<canvas id="wkCv"></canvas>
 
 <script>
-// ════════════════════════════════════════════
-// VERIDEX REAL FORENSIC DETECTION ENGINE v4.0
-// Browser-based using actual image analysis
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// VERIDEX ENGINE v5 · 10 Forensic Signals
+// Fast ELA (256px cap, single-pass)
+// ═══════════════════════════════════════════════
+let ready = false, curImg = null, hmData = null, hmOn = false;
+let sess = { total:0, fake:0, real:0 };
 
-let engineReady = false;
-let currentImage = null;
-let heatmapVisible = false;
-let heatmapData = null;
-let sessionStats = { total: 0, fake: 0, real: 0 };
-let startTime = Date.now();
-
-// ── ENGINE INIT ──
-async function initEngine() {
-  log('LOADING FORENSIC MODULES...', 'info');
-
-  // Step 1: Pixel forensics (always available)
-  await delay(400);
-  setDot(1, 'ready', 'READY');
-  log('PIXEL FORENSICS: READY', 'ok');
-
-  // Step 2: FFT
-  await delay(300);
-  setDot(2, 'ready', 'READY');
-  log('FFT FREQUENCY ANALYZER: READY', 'ok');
-
-  // Step 3: Noise
-  await delay(300);
-  setDot(3, 'ready', 'READY');
-  log('NOISE PATTERN ENGINE: READY', 'ok');
-
-  // Step 4: Face landmarks via face-api.js
-  setDot(4, 'loading', 'Loading face models...');
-  try {
-    // Try loading face-api models from CDN
-    await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model');
-    setDot(4, 'ready', 'READY — 68 landmarks');
-    log('FACE LANDMARK DETECTOR: READY', 'ok');
-  } catch(e) {
-    setDot(4, 'ready', 'READY (basic mode)');
-    log('FACE DETECTOR: BASIC MODE', 'warn');
-  }
-
-  // Step 5-6
-  await delay(200);
-  setDot(5, 'ready', 'READY');
-  setDot(6, 'ready', 'READY');
-  log('COLOR & COMPRESSION ENGINES: READY', 'ok');
-
-  engineReady = true;
-  document.getElementById('engineBadge').textContent = '✅ ENGINE READY';
-  document.getElementById('engineBadge').style.borderColor = 'var(--accent3)';
-  document.getElementById('engineBadge').style.color = 'var(--accent3)';
-  log('ALL MODULES LOADED — READY FOR ANALYSIS', 'ok');
+// ── BOOT ──
+async function boot() {
+  log('INITIALISING FORENSIC MODULES...','i');
+  await pause(200);
+  ready = true;
+  document.getElementById('statusLbl').textContent = 'ENGINE READY';
+  log('ALL SIGNALS ONLINE','ok');
 }
 
-// ── FILE HANDLING ──
-function handleFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  log(`FILE: ${file.name} (${(file.size/1024).toFixed(0)}KB)`, 'info');
-
-  const url = URL.createObjectURL(file);
-  const img = document.getElementById('previewImg');
-  img.src = url;
-  img.style.display = 'block';
-
+// ── FILE LOAD ──
+function loadFile(inp) {
+  const f = inp.files[0]; if (!f) return;
+  log(`FILE: ${f.name} (${(f.size/1024).toFixed(0)}KB)`,'i');
+  const img = document.getElementById('prevImg');
+  img.src = URL.createObjectURL(f);
   img.onload = () => {
-    currentImage = img;
-    document.getElementById('uploadZone').style.display = 'none';
-    document.getElementById('previewArea').classList.add('active');
-    document.getElementById('analysisSteps').classList.add('active');
-    log(`IMAGE LOADED: ${img.naturalWidth}x${img.naturalHeight}px`, 'info');
+    curImg = img;
+    document.getElementById('dropZone').style.display = 'none';
+    document.getElementById('prevWrap').classList.add('on');
+    document.getElementById('pipeWrap').classList.add('on');
+    resetPipe();
+    log(`LOADED ${img.naturalWidth}×${img.naturalHeight}px`,'i');
   };
 }
 
-// ── REAL ANALYSIS ENGINE ──
-async function startRealAnalysis() {
-  if (!currentImage) return;
-  if (!engineReady) { showToast('ENGINE STILL LOADING...'); return; }
+// Drag & drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  const dt = new DataTransfer(); dt.items.add(f);
+  document.getElementById('fileIn').files = dt.files;
+  loadFile(document.getElementById('fileIn'));
+});
 
-  document.getElementById('analyzeBtn').disabled = true;
-  document.getElementById('scanOverlay').classList.add('active');
-  document.getElementById('resultsSection').classList.remove('active');
-  document.getElementById('explanationBox').classList.remove('active');
-  document.getElementById('heatmapBtn').style.display = 'none';
+// ── MAIN ANALYSIS ──
+async function runAnalysis() {
+  if (!curImg || !ready) return;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('verdWrap').classList.remove('on');
+  document.getElementById('expBox').classList.remove('on');
+  document.getElementById('scanLine').classList.add('on');
+  resetPipe();
+  log('═ ANALYSIS STARTED ═','w');
 
-  log('═══ STARTING FORENSIC ANALYSIS ═══', 'warn');
+  // Draw to work canvas, cap at 512px
+  const wk = document.getElementById('wkCv');
+  const wx = wk.getContext('2d');
+  const SC = Math.min(1, 512 / Math.max(curImg.naturalWidth, curImg.naturalHeight));
+  wk.width  = Math.floor(curImg.naturalWidth  * SC);
+  wk.height = Math.floor(curImg.naturalHeight * SC);
+  wx.drawImage(curImg, 0, 0, wk.width, wk.height);
+  const id = wx.getImageData(0, 0, wk.width, wk.height);
+  const W = wk.width, H = wk.height;
+  const S = {};
 
-  // Draw image to work canvas
-  const canvas = document.getElementById('workCanvas');
-  const ctx = canvas.getContext('2d');
-  const img = currentImage;
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  ctx.drawImage(img, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  pipe(1,'run'); S.pixel = await sPixel(id);            pipe(1,'done', fmt(S.pixel)); setSig(1,S.pixel); log(`PIXEL: ${fmt(S.pixel)}`,S.pixel>50?'w':'ok');
+  pipe(2,'run'); S.fft   = await sFFT(id,W,H);          pipe(2,'done', fmt(S.fft));   setSig(2,S.fft);   log(`FFT: ${fmt(S.fft)}`,S.fft>50?'w':'ok');
+  pipe(3,'run'); const ela = await sELA(wk,W,H);
+                 S.ela = ela.score; hmData = ela.heatmap; drawHeatmap(ela.heatmap,W,H);
+                                                          pipe(3,'done', fmt(S.ela));  setSig(3,S.ela);   log(`ELA: ${fmt(S.ela)}`,S.ela>50?'w':'ok');
+  pipe(4,'run'); const skin = await sSkin(id,W,H);       S.face = skin.score;          pipe(4,'done',skin.lbl); setSig(4,S.face); log(`SKIN: ${skin.lbl}`,S.face>50?'w':'ok');
+  pipe(5,'run'); S.color = await sColor(id);             pipe(5,'done', fmt(S.color)); setSig(5,S.color); log(`COLOR: ${fmt(S.color)}`,S.color>50?'w':'ok');
+  pipe(6,'run'); const hand = await sHands(id,W,H);      S.hand = hand.score;          pipe(6,'done',hand.lbl); setSig(6,S.hand); log(`HANDS: ${hand.lbl}`,S.hand>50?'w':'ok');
+  pipe(7,'run'); const light = await sLight(id,W,H);     S.lighting = light.score;     pipe(7,'done',light.lbl); setSig(7,S.lighting); log(`LIGHT: ${light.lbl}`,S.lighting>50?'w':'ok');
+  pipe(8,'run'); const bg   = await sBg(id,W,H);         S.background = bg.score;      pipe(8,'done',bg.lbl); setSig(8,S.background); log(`BG: ${bg.lbl}`,S.background>50?'w':'ok');
+  pipe(9,'run'); const tg   = await sTextGeo(id,W,H);    S.textgeo = tg.score;         pipe(9,'done',tg.lbl); setSig(9,S.textgeo); log(`TEXT/GEO: ${tg.lbl}`,S.textgeo>50?'w':'ok');
 
-  let scores = {};
-  let explanations = [];
+  // ── ENSEMBLE ──
+  pipe(10,'run'); await pause(100);
+  const W8 = { pixel:.12, fft:.12, ela:.12, face:.12, color:.08, hand:.16, lighting:.12, background:.08, textgeo:.08 };
+  const raw = S.pixel*W8.pixel + S.fft*W8.fft + S.ela*W8.ela + S.face*W8.face + S.color*W8.color +
+              S.hand*W8.hand + S.lighting*W8.lighting + S.background*W8.background + S.textgeo*W8.textgeo;
+  const all = Object.values(S);
+  const hi  = all.filter(v=>v>45).length;
+  const boost = hi>=5 ? hi*6 : hi>=3 ? hi*4 : hi>=2 ? 7 : 0;
+  const ab  = (S.hand>60||S.lighting>60) ? 12 : 0;
+  const mb  = Math.max(...all)>70 ? (Math.max(...all)-70)*.6 : 0;
+  const fake = Math.min(99, raw + boost + ab + mb);
+  const isFake = fake > 34;
+  pipe(10,'done', fmt(fake));
 
-  // ── STEP 1: PIXEL & NOISE FORENSICS ──
-  setStep(1, 'running');
-  await delay(200);
-  const pixelScore = await analyzePixelAnomalies(imageData);
-  scores.pixel = pixelScore;
-  setStep(1, 'done', pixelScore.toFixed(1) + '%');
-  setSidebar('s1', pixelScore); log(`PIXEL NOISE: ${pixelScore.toFixed(1)}%`, pixelScore>50?'warn':'ok');
-  if (pixelScore > 50) explanations.push('🔬 Zero sensor noise detected — AI images lack the natural photon noise of real cameras');
+  log(`VERDICT: ${fake.toFixed(1)}% → ${isFake?'DEEPFAKE':'AUTHENTIC'}`, isFake?'e':'ok');
+  document.getElementById('scanLine').classList.remove('on');
+  showResults(isFake, fake, S, [skin, hand, light, bg, tg]);
+  document.getElementById('runBtn').disabled = false;
 
-  // ── STEP 2: FFT FREQUENCY ──
-  setStep(2, 'running');
-  await delay(250);
-  const fftScore = await analyzeFrequencyDomain(imageData, canvas.width, canvas.height);
-  scores.fft = fftScore;
-  setStep(2, 'done', fftScore.toFixed(1) + '%');
-  setSidebar('s2', fftScore); log(`FFT: ${fftScore.toFixed(1)}%`, fftScore>50?'warn':'ok');
-  if (fftScore > 50) explanations.push('🌊 GAN checkerboard + spectral periodicity artifacts — signature of neural upsampling');
-
-  // ── STEP 3: ELA ──
-  setStep(3, 'running');
-  await delay(300);
-  const elaScore = await analyzeELA(imageData, canvas.width, canvas.height, canvas);
-  scores.ela = elaScore.score;
-  heatmapData = elaScore.heatmap;
-  setStep(3, 'done', elaScore.score.toFixed(1) + '%');
-  setSidebar('s3', elaScore.score); log(`ELA: ${elaScore.score.toFixed(1)}%`, elaScore.score>50?'warn':'ok');
-  if (elaScore.score > 50) explanations.push('📊 ELA shows abnormally uniform compression — image generated fresh with no real editing history');
-
-  // ── STEP 4: SKIN & FACE TEXTURE ──
-  setStep(4, 'running');
-  await delay(350);
-  const faceScore = await analyzeFaceSymmetry(img);
-  scores.face = faceScore.score;
-  setStep(4, 'done', faceScore.label);
-  setSidebar('s4', faceScore.score); log(`FACE: ${faceScore.label}`, faceScore.score>50?'warn':'ok');
-  if (faceScore.score > 50) explanations.push('👁️ ' + faceScore.detail);
-
-  // ── STEP 5: COLOR CHANNELS ──
-  setStep(5, 'running');
-  await delay(200);
-  const colorScore = await analyzeColorChannels(imageData);
-  scores.color = colorScore;
-  setStep(5, 'done', colorScore.toFixed(1) + '%');
-  setSidebar('s5', colorScore); log(`COLOR: ${colorScore.toFixed(1)}%`, colorScore>50?'warn':'ok');
-  if (colorScore > 50) explanations.push('🎨 Over-smooth color histogram — AI generators produce unrealistically consistent saturation');
-
-  // ── STEP 6: ANATOMY — HANDS & FINGERS ──
-  setStep(6, 'running');
-  await delay(300);
-  const handScore = await analyzeHandAnatomy(imageData, canvas.width, canvas.height);
-  scores.hand = handScore.score;
-  setStep(6, 'done', handScore.label);
-  setSidebar('s6', handScore.score); log(`HAND ANATOMY: ${handScore.label}`, handScore.score>50?'warn':'ok');
-  if (handScore.score > 50) explanations.push('✋ ' + handScore.detail);
-
-  // ── STEP 7: LIGHTING & SHADOW PHYSICS ──
-  setStep(7, 'running');
-  await delay(280);
-  const lightScore = await analyzeLightingPhysics(imageData, canvas.width, canvas.height);
-  scores.lighting = lightScore.score;
-  setStep(7, 'done', lightScore.label);
-  setSidebar('s7', lightScore.score); log(`LIGHTING: ${lightScore.label}`, lightScore.score>50?'warn':'ok');
-  if (lightScore.score > 50) explanations.push('💡 ' + lightScore.detail);
-
-  // ── STEP 8: BACKGROUND COHERENCE ──
-  setStep(8, 'running');
-  await delay(250);
-  const bgScore = await analyzeBackgroundCoherence(imageData, canvas.width, canvas.height);
-  scores.background = bgScore.score;
-  setStep(8, 'done', bgScore.label);
-  setSidebar('s8', bgScore.score); log(`BACKGROUND: ${bgScore.label}`, bgScore.score>50?'warn':'ok');
-  if (bgScore.score > 50) explanations.push('🌆 ' + bgScore.detail);
-
-  // ── STEP 9: TEXT & GEOMETRY ──
-  setStep(9, 'running');
-  await delay(250);
-  const textScore = await analyzeTextGeometry(imageData, canvas.width, canvas.height);
-  scores.textgeo = textScore.score;
-  setStep(9, 'done', textScore.label);
-  setSidebar('s9', textScore.score); log(`TEXT/GEO: ${textScore.label}`, textScore.score>50?'warn':'ok');
-  if (textScore.score > 50) explanations.push('📝 ' + textScore.detail);
-
-  // ── STEP 10: ENSEMBLE VERDICT ──
-  setStep(10, 'running');
-  await delay(300);
-
-  // Weighted ensemble — 10 signals, anatomy signals weighted heavily
-  const weights = {
-    pixel:0.12, fft:0.12, ela:0.12, face:0.12, color:0.08,
-    hand:0.16, lighting:0.12, background:0.08, textgeo:0.08, compression:0.00
-  };
-  const allScores = [scores.pixel,scores.fft,scores.ela,scores.face,scores.color,
-                     scores.hand,scores.lighting,scores.background,scores.textgeo];
-  const rawScore =
-    scores.pixel*weights.pixel + scores.fft*weights.fft + scores.ela*weights.ela +
-    scores.face*weights.face + scores.color*weights.color + scores.hand*weights.hand +
-    scores.lighting*weights.lighting + scores.background*weights.background +
-    scores.textgeo*weights.textgeo;
-
-  // Multi-signal boost — more firing signals = higher confidence
-  const highSignals = allScores.filter(s => s > 45).length;
-  const signalBoost = highSignals >= 5 ? highSignals*6 : highSignals >= 3 ? highSignals*4 : highSignals >= 2 ? 7 : 0;
-
-  // Anatomy boost — hand or lighting anomaly is very strong evidence
-  const anatomyBoost = (scores.hand > 60 || scores.lighting > 60) ? 12 : 0;
-
-  // Peak signal boost
-  const maxSignal = Math.max(...allScores);
-  const maxBoost = maxSignal > 70 ? (maxSignal-70)*0.6 : 0;
-
-  const fakeProbability = Math.min(99, rawScore + signalBoost + anatomyBoost + maxBoost);
-
-  // Threshold: 34 — sensitive to AI images
-  const isFake = fakeProbability > 34;
-  setStep(10, 'done', fakeProbability.toFixed(1) + '%');
-  log(`VERDICT: ${fakeProbability.toFixed(1)}% deepfake probability`, isFake ? 'err' : 'ok');
-
-  // Update all metric cells
-  ['pixel','fft','ela','face','color','hand','lighting','background','textgeo'].forEach((k,i) => {
-    setMetricCell('m'+(i+1), scores[k] || 0);
-  });
-  setMetricCell('m10', scores.compression || 0);
-
-  // Show results
-  document.getElementById('scanOverlay').classList.remove('active');
-  showFinalResults(isFake, fakeProbability, scores, explanations);
-  document.getElementById('analyzeBtn').disabled = false;
-
-  // Show heatmap button
-  if (heatmapData) {
-    document.getElementById('heatmapBtn').style.display = '';
-    drawHeatmap(heatmapData, canvas.width, canvas.height);
-  }
-
-  // Update session
-  sessionStats.total++;
-  if (isFake) sessionStats.fake++; else sessionStats.real++;
-  document.getElementById('statTotal').textContent = sessionStats.total;
-  document.getElementById('statFake').textContent = sessionStats.fake;
-  document.getElementById('statReal').textContent = sessionStats.real;
-
-  // Save to localStorage for dashboard
-  saveScanResult(isFake, fakeProbability, scores);
+  sess.total++; isFake ? sess.fake++ : sess.real++;
+  document.getElementById('sTotal').textContent = sess.total;
+  document.getElementById('sFake').textContent  = sess.fake;
+  document.getElementById('sReal').textContent  = sess.real;
+  saveScan(isFake, fake, S);
 }
 
-// ══════════════════════════════════════════════
-// VERIDEX FORENSIC ALGORITHMS v4.1
-// AI-IMAGE SPECIFIC DETECTION
-// Tuned for: Midjourney, DALL-E, Stable Diffusion,
-//            StyleGAN, DeepFake face swaps
-// ══════════════════════════════════════════════
+// ══════════════════════════════════
+// FORENSIC SIGNAL IMPLEMENTATIONS
+// ══════════════════════════════════
 
-// ── SIGNAL 1: PIXEL SMOOTHNESS + TEXTURE ANALYSIS ──
-// AI images have unnaturally smooth, perfect textures
-// Real photos have natural grain, sensor noise, imperfections
-async function analyzePixelAnomalies(imageData) {
-  const data = imageData.data;
-  const w = imageData.width, h = imageData.height;
-
-  // --- NOISE FLOOR ANALYSIS ---
-  // Real cameras produce photon shot noise & sensor noise
-  // AI images are "too clean" — near-zero noise in flat regions
-  let noiseSum = 0, noiseSamples = 0;
-  for (let y = 2; y < h - 2; y += 2) {
-    for (let x = 2; x < w - 2; x += 2) {
-      const i = (y * w + x) * 4;
-      const neighbors = [
-        (y-1)*w+x-1, (y-1)*w+x, (y-1)*w+x+1,
-        y*w+x-1,               y*w+x+1,
-        (y+1)*w+x-1, (y+1)*w+x, (y+1)*w+x+1
-      ];
-      const center = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
-      const neighborVals = neighbors.map(n => 0.299*data[n*4] + 0.587*data[n*4+1] + 0.114*data[n*4+2]);
-      const localMean = neighborVals.reduce((a,b)=>a+b,0)/8;
-      const localNoise = Math.abs(center - localMean);
-      noiseSum += localNoise;
-      noiseSamples++;
-    }
+async function sPixel(id) {
+  const d=id.data, w=id.width, h=id.height;
+  let ns=0, n=0;
+  for (let y=2;y<h-2;y+=3) for (let x=2;x<w-2;x+=3) {
+    const i=(y*w+x)*4, c=lum(d,i);
+    const nb=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+    const avg = nb.reduce((s,[dy,dx])=>s+lum(d,((y+dy)*w+(x+dx))*4),0)/8;
+    ns += Math.abs(c-avg); n++;
   }
-  const avgNoise = noiseSum / noiseSamples;
-  // Real photos: avgNoise typically 3-12. AI images: 0.5-2.5
-  // Map: very low noise → high AI score
-  const noiseTooLow = avgNoise < 3.5;
-  const noiseScore = noiseTooLow ? Math.min(100, (3.5 - avgNoise) * 35 + 45) : Math.max(0, 30 - avgNoise * 3);
+  const avg = ns/n;
+  const nS = avg<3.5 ? Math.min(100,(3.5-avg)*32+40) : Math.max(0,30-avg*3);
+  let sm=0, gc=0;
+  for (let y=1;y<Math.min(h-1,200);y+=3) for (let x=1;x<Math.min(w-1,200);x+=3) {
+    const i=(y*w+x)*4;
+    if (Math.abs(lum(d,i)-lum(d,(y*w+x+1)*4))<1.5 && Math.abs(lum(d,i)-lum(d,((y+1)*w+x)*4))<1.5) sm++;
+    gc++;
+  }
+  return Math.min(100, nS*.55 + (sm/gc)*100*.45);
+}
 
-  // --- TEXTURE FREQUENCY ANALYSIS ---
-  // AI images have very regular, repetitive micro-textures (hair, skin, fabric)
-  const blockSize = 16;
-  let textureScores = [];
-  for (let by = 0; by < Math.min(h, 256) - blockSize; by += blockSize) {
-    for (let bx = 0; bx < Math.min(w, 256) - blockSize; bx += blockSize) {
-      let vals = [];
-      for (let y = by; y < by + blockSize; y++) {
-        for (let x = bx; x < bx + blockSize; x++) {
-          const i = (y * w + x) * 4;
-          vals.push(0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]);
+async function sFFT(id, w, h) {
+  const d=id.data, sz=Math.min(w,h,128);
+  const g = new Float32Array(sz*sz);
+  for (let y=0;y<sz;y++) for (let x=0;x<sz;x++) g[y*sz+x]=lum(d,(y*w+x)*4)/255;
+  let cb=0, cbn=0;
+  for (let y=0;y<sz-2;y++) for (let x=0;x<sz-2;x++) {
+    const a=g[y*sz+x],b=g[y*sz+x+1],c=g[(y+1)*sz+x],dd=g[(y+1)*sz+x+1];
+    if (Math.abs((a+dd)-(b+c))>0.04) cb++; cbn++;
+  }
+  const cbS = Math.min(100,(cb/cbn)*400);
+  let ps=0; const st=8;
+  for (let y=0;y<sz-st;y++) for (let x=0;x<sz-st;x++)
+    ps += (1-Math.abs(g[y*sz+x]-g[(y+st)*sz+x]) + 1-Math.abs(g[y*sz+x]-g[y*sz+x+st]))/2;
+  const pS = Math.min(100,Math.max(0,(ps/((sz-st)**2)-.6)*250));
+  return Math.min(100, cbS*.5+pS*.5);
+}
+
+// ── FAST ELA — 256px cap, single-pass JPEG ──
+async function sELA(canvas, w, h) {
+  const ECAP=256, es=Math.min(1,ECAP/Math.max(w,h));
+  const tw=Math.floor(w*es), th=Math.floor(h*es);
+  const tmp=document.createElement('canvas'); tmp.width=tw; tmp.height=th;
+  const tc=tmp.getContext('2d'); tc.drawImage(canvas,0,0,tw,th);
+  const orig=tc.getImageData(0,0,tw,th);
+  return new Promise(res => {
+    const img=new Image();
+    img.onload = () => {
+      const cc=document.createElement('canvas'); cc.width=tw; cc.height=th;
+      const cx2=cc.getContext('2d'); cx2.drawImage(img,0,0);
+      const comp=cx2.getImageData(0,0,tw,th);
+      const od=orig.data, cd=comp.data;
+      let total=0, bDiffs=[], hm=new Float32Array(tw*th);
+      const bs=16;
+      for (let by=0;by<th;by+=bs) for (let bx=0;bx<tw;bx+=bs) {
+        let bS=0, cnt=0;
+        for (let dy=0;dy<bs&&by+dy<th;dy++) for (let dx=0;dx<bs&&bx+dx<tw;dx++) {
+          const i=((by+dy)*tw+(bx+dx))*4;
+          const diff=(Math.abs(od[i]-cd[i])+Math.abs(od[i+1]-cd[i+1])+Math.abs(od[i+2]-cd[i+2]))/3;
+          bS+=diff; hm[(by+dy)*tw+(bx+dx)]=diff/50; cnt++;
         }
+        bDiffs.push(bS/cnt); total+=bS/cnt;
       }
-      const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
-      const variance = vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length;
-      textureScores.push(variance);
-    }
-  }
-
-  // AI images: texture variance tends to be mid-range but suspiciously uniform across blocks
-  const texMean = textureScores.reduce((a,b)=>a+b,0)/textureScores.length;
-  const texStd = Math.sqrt(textureScores.reduce((s,v)=>s+(v-texMean)**2,0)/textureScores.length);
-  const texCV = texMean > 0 ? texStd/texMean : 1;
-  // AI: texCV usually < 0.5 (too uniform), Real: texCV > 0.8
-  const textureUniformity = texCV < 0.6 ? (0.6 - texCV) * 80 : 0;
-
-  // --- GRADIENT PERFECTION SCORE ---
-  // AI images have impossibly smooth gradients (skin, sky, backgrounds)
-  let perfectGradients = 0, gradCount = 0;
-  for (let y = 1; y < Math.min(h-1, 300); y += 2) {
-    for (let x = 1; x < Math.min(w-1, 300); x += 2) {
-      const i = (y*w+x)*4;
-      const r = (y*w+x+1)*4;
-      const d = ((y+1)*w+x)*4;
-      const gray = v => 0.299*data[v]+0.587*data[v+1]+0.114*data[v+2];
-      const gx = Math.abs(gray(i) - gray(r));
-      const gy = Math.abs(gray(i) - gray(d));
-      if (gx < 1.5 && gy < 1.5) perfectGradients++;
-      gradCount++;
-    }
-  }
-  const gradScore = (perfectGradients/gradCount) * 100;
-  // Real images: ~20-40% smooth. AI images: 50-75% smooth
-  const gradAnomalyScore = gradScore > 48 ? (gradScore - 48) * 2.5 : 0;
-
-  const finalScore = noiseScore * 0.45 + textureUniformity * 0.30 + gradAnomalyScore * 0.25;
-  return Math.min(100, Math.max(0, finalScore));
-}
-
-// ── SIGNAL 2: SPECTRAL / FREQUENCY ANALYSIS ──
-// AI generators leave unique spectral fingerprints
-// GANs show grid artifacts; Diffusion models show specific frequency patterns
-async function analyzeFrequencyDomain(imageData, width, height) {
-  const data = imageData.data;
-  const size = Math.min(width, height, 128);
-  let gray = new Float32Array(size * size);
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const i = (y * width + x) * 4;
-      gray[y * size + x] = (0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]) / 255;
-    }
-  }
-
-  // --- GAN CHECKERBOARD DETECTION ---
-  // GANs using transposed convolutions leave a 2px checkerboard pattern
-  let cbArtifact = 0, cbCount = 0;
-  for (let y = 0; y < size - 2; y++) {
-    for (let x = 0; x < size - 2; x++) {
-      const v00 = gray[y*size+x];
-      const v01 = gray[y*size+x+1];
-      const v10 = gray[(y+1)*size+x];
-      const v11 = gray[(y+1)*size+x+1];
-      // Classic checkerboard: alternating high-low pattern
-      const diff = Math.abs((v00 + v11) - (v01 + v10));
-      if (diff > 0.04) cbArtifact++;
-      cbCount++;
-    }
-  }
-  const cbScore = Math.min(100, (cbArtifact/cbCount) * 400);
-
-  // --- SPECTRAL PERIODICITY ---
-  // AI images have suspiciously regular periodic patterns (tiling)
-  let periodicSum = 0;
-  const step = 8;
-  for (let y = 0; y < size - step; y++) {
-    for (let x = 0; x < size - step; x++) {
-      const v1 = gray[y*size+x];
-      const v2 = gray[(y+step)*size+x];
-      const v3 = gray[y*size+x+step];
-      const similarity1 = 1 - Math.abs(v1-v2);
-      const similarity2 = 1 - Math.abs(v1-v3);
-      periodicSum += (similarity1 + similarity2) / 2;
-    }
-  }
-  const periodicAvg = periodicSum / ((size-step)*(size-step));
-  // High periodicity = AI tiling artifact
-  const periodicScore = Math.min(100, (periodicAvg - 0.6) * 250);
-
-  // --- HORIZONTAL/VERTICAL BIAS ---
-  // AI images often have slight bias in horizontal or vertical directions
-  let hBias = 0, vBias = 0, biasCount = 0;
-  for (let y = 0; y < size-1; y++) {
-    for (let x = 0; x < size-1; x++) {
-      hBias += Math.abs(gray[y*size+x] - gray[y*size+x+1]);
-      vBias += Math.abs(gray[y*size+x] - gray[(y+1)*size+x]);
-      biasCount++;
-    }
-  }
-  const dirBias = Math.abs(hBias - vBias) / Math.max(hBias+vBias, 0.001) * 100;
-
-  return Math.min(100, Math.max(0, cbScore*0.45 + periodicScore*0.35 + dirBias*0.20));
-}
-
-// ── SIGNAL 3: ELA — Error Level Analysis ──
-// AI images generated from scratch show UNIFORM ELA (no editing history)
-// Real photos that are clean also show uniform ELA — but AI images
-// specifically show zero variation in certain regions (faces, backgrounds)
-async function analyzeELA(imageData, width, height, originalCanvas) {
-  const data = imageData.data;
-
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = width; tempCanvas.height = height;
-  const tempCtx = tempCanvas.getContext('2d');
-  tempCtx.drawImage(originalCanvas, 0, 0);
-
-  // Two compressions at different qualities to find inconsistencies
-  const compressed85 = tempCanvas.toDataURL('image/jpeg', 0.85);
-  const compressed60 = tempCanvas.toDataURL('image/jpeg', 0.60);
-
-  return new Promise(resolve => {
-    const img1 = new Image(), img2 = new Image();
-    let loaded = 0;
-    const checkDone = () => {
-      if (++loaded < 2) return;
-
-      const c1 = document.createElement('canvas'); c1.width=width; c1.height=height;
-      const c2 = document.createElement('canvas'); c2.width=width; c2.height=height;
-      c1.getContext('2d').drawImage(img1,0,0);
-      c2.getContext('2d').drawImage(img2,0,0);
-      const d1 = c1.getContext('2d').getImageData(0,0,width,height).data;
-      const d2 = c2.getContext('2d').getImageData(0,0,width,height).data;
-
-      const blockSize = 16;
-      let blockDiffs = [];
-      const heatmap = new Float32Array(width * height);
-
-      for (let by = 0; by < height; by += blockSize) {
-        for (let bx = 0; bx < width; bx += blockSize) {
-          let blockSum = 0, count = 0;
-          for (let y = by; y < Math.min(by+blockSize, height); y++) {
-            for (let x = bx; x < Math.min(bx+blockSize, width); x++) {
-              const i = (y*width+x)*4;
-              const diff = (Math.abs(d1[i]-d2[i]) + Math.abs(d1[i+1]-d2[i+1]) + Math.abs(d1[i+2]-d2[i+2])) / 3;
-              blockSum += diff;
-              heatmap[y*width+x] = diff / 50;
-              count++;
-            }
-          }
-          blockDiffs.push(blockSum / count);
-        }
-      }
-
-      const mean = blockDiffs.reduce((a,b)=>a+b,0)/blockDiffs.length;
-      const variance = blockDiffs.reduce((s,v)=>s+(v-mean)**2,0)/blockDiffs.length;
-      const std = Math.sqrt(variance);
-
-      // AI images: ELA is very LOW and UNIFORM (generated fresh, no editing)
-      // Edited real images: ELA is HIGH and VARIED
-      // Key insight: pure AI images have mean ELA < 4 AND std < 2
-      const isAILow = mean < 5;
-      const isAIUniform = std < 3;
-
-      let elaScore;
-      if (isAILow && isAIUniform) {
-        // Classic AI generation signature: too clean, too uniform
-        elaScore = 65 + (5 - mean) * 5 + (3 - std) * 3;
-      } else if (mean > 15) {
-        // Heavy editing or real photo — lower AI score
-        elaScore = Math.max(10, 40 - mean * 1.5);
-      } else {
-        elaScore = 30 + mean * 2;
-      }
-
-      // Normalize heatmap
-      const maxH = Math.max(...heatmap);
-      if (maxH > 0) for (let i = 0; i < heatmap.length; i++) heatmap[i] /= maxH;
-
-      resolve({ score: Math.min(100, Math.max(0, elaScore)), heatmap: { data: heatmap, width, height } });
+      const mean=total/bDiffs.length;
+      const std=Math.sqrt(bDiffs.reduce((s,v)=>s+(v-mean)**2,0)/bDiffs.length);
+      // AI = very low mean + uniform std (freshly generated, no history)
+      let score = mean<5&&std<3 ? 65+(5-mean)*5+(3-std)*3 : mean>15 ? Math.max(10,40-mean*1.5) : 30+mean*2;
+      const mx=Math.max(...hm); if(mx>0) for(let i=0;i<hm.length;i++) hm[i]/=mx;
+      res({ score:Math.min(100,Math.max(0,score)), heatmap:{data:hm,width:tw,height:th} });
     };
-    img1.onload = checkDone; img2.onload = checkDone;
-    img1.src = compressed85; img2.src = compressed60;
+    img.src = tmp.toDataURL('image/jpeg',0.75);
   });
 }
 
-// ── SIGNAL 4: FACE GEOMETRY + AI SKIN ANALYSIS ──
-// AI faces have: perfect lighting, zero pores, unreal iris detail,
-// smooth hair-background boundary (known GAN failure mode)
-async function analyzeFaceSymmetry(img) {
-  const canvas = document.getElementById('workCanvas');
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
-
-  // --- SKIN TEXTURE ANALYSIS ---
-  // AI skin: perfectly smooth, no pores, no micro-texture variation
-  // Real skin: shows pore texture, minor blemishes, natural variation
-  let skinPixels = [], skinCount = 0;
-  for (let y = 0; y < h; y += 2) {
-    for (let x = 0; x < w; x += 2) {
-      const i = (y*w+x)*4;
-      const r = data[i], g = data[i+1], b = data[i+2];
-      // Skin tone detection (covers multiple ethnicities)
-      const isSkin = (r > 60 && g > 40 && b > 20 && r > b &&
-        (Math.max(r,g,b) - Math.min(r,g,b)) > 10 &&
-        r - g > -10 && r - g < 60);
-      if (isSkin) {
-        skinPixels.push(0.299*r + 0.587*g + 0.114*b);
-        skinCount++;
-      }
-    }
+async function sSkin(id, w, h) {
+  const d=id.data; let sp=[], sc=0;
+  for (let y=0;y<h;y+=2) for (let x=0;x<w;x+=2) {
+    const i=(y*w+x)*4, r=d[i],g=d[i+1],b=d[i+2];
+    if ((r>60&&g>40&&b>20&&r>b&&(Math.max(r,g,b)-Math.min(r,g,b))>10&&r-g>-10&&r-g<60)||
+        (r>200&&g>180&&b>160&&Math.abs(r-g)<20)) { sp.push(.299*r+.587*g+.114*b); sc++; }
   }
-
-  if (skinCount < 100) {
-    // No face / skin found — lower confidence score
-    return { score: 30, label: 'NO FACE DETECTED', detail: 'no skin regions found' };
+  if (sc<80) return { score:25, lbl:'NO FACE', detail:'no skin regions found' };
+  const sm=sp.reduce((a,b)=>a+b)/sp.length;
+  const ss=Math.sqrt(sp.reduce((s,v)=>s+(v-sm)**2,0)/sp.length);
+  const skinS = ss<9 ? Math.min(90,(9-ss)*10+35) : Math.max(10,30-ss);
+  let esh=0, et=0;
+  for (let y=Math.floor(h*.2);y<Math.floor(h*.8);y+=4) for (let x=Math.floor(w*.2);x<Math.floor(w*.8);x+=4) {
+    const i=(y*w+x)*4;
+    if (Math.sqrt((lum(d,i)-lum(d,(y*w+x+1)*4))**2+(lum(d,i)-lum(d,((y+1)*w+x)*4))**2)>30) esh++;
+    et++;
   }
-
-  // Measure micro-texture in skin regions
-  const skinMean = skinPixels.reduce((a,b)=>a+b,0)/skinPixels.length;
-  const skinStd = Math.sqrt(skinPixels.reduce((s,v)=>s+(v-skinMean)**2,0)/skinPixels.length);
-
-  // AI skin: very low std (4-8), Real skin: higher std (10-20)
-  const skinTooSmooth = skinStd < 9;
-  const skinScore = skinTooSmooth ? Math.min(90, (9 - skinStd) * 10 + 40) : Math.max(15, 35 - skinStd);
-
-  // --- BACKGROUND EDGE SHARPNESS ---
-  // AI images have suspiciously clean hair/background separation
-  // Detect unnaturally sharp edges at image periphery
-  let edgeSharpness = 0, edgeCount = 0;
-  const margin = Math.floor(Math.min(w,h) * 0.15);
-  for (let y = margin; y < h - margin; y += 4) {
-    for (let x = margin; x < w - margin; x += 4) {
-      const i = (y*w+x)*4;
-      const r2 = (y*w+x+1)*4;
-      const d2 = ((y+1)*w+x)*4;
-      const g1 = 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-      const g2 = 0.299*data[r2]+0.587*data[r2+1]+0.114*data[r2+2];
-      const g3 = 0.299*data[d2]+0.587*data[d2+1]+0.114*data[d2+2];
-      const edgeMag = Math.sqrt((g1-g2)**2 + (g1-g3)**2);
-      if (edgeMag > 30) edgeSharpness++;
-      edgeCount++;
-    }
-  }
-  const edgeRatio = edgeSharpness / edgeCount;
-  // AI: very high sharpness ratio (0.15-0.30), Real: 0.05-0.12
-  const edgeScore = edgeRatio > 0.12 ? Math.min(90, (edgeRatio - 0.12) * 500) : 0;
-
-  // --- COLOR PERFECTION (skin hue uniformity) ---
-  // AI skin has suspiciously uniform hue — real skin has variation
-  let hues = [];
-  for (let y = 0; y < h; y += 4) {
-    for (let x = 0; x < w; x += 4) {
-      const i = (y*w+x)*4;
-      const r = data[i]/255, g = data[i+1]/255, b = data[i+2]/255;
-      const max = Math.max(r,g,b), min = Math.min(r,g,b);
-      if (max > 0.3 && max-min > 0.05) {
-        let hue;
-        if (max === r) hue = ((g-b)/(max-min)) % 6;
-        else if (max === g) hue = (b-r)/(max-min) + 2;
-        else hue = (r-g)/(max-min) + 4;
-        hues.push(hue * 60);
-      }
-    }
-  }
-  let hueScore = 0;
-  if (hues.length > 50) {
-    const hueMean = hues.reduce((a,b)=>a+b,0)/hues.length;
-    const hueStd = Math.sqrt(hues.reduce((s,v)=>s+(v-hueMean)**2,0)/hues.length);
-    // AI: hueStd < 25, Real: hueStd > 40
-    hueScore = hueStd < 30 ? Math.min(80, (30-hueStd)*2.5) : 0;
-  }
-
-  const finalScore = skinScore*0.45 + edgeScore*0.25 + hueScore*0.30;
-  return {
-    score: Math.min(100, Math.max(0, finalScore)),
-    label: skinCount > 500 ? 'FACE REGION FOUND' : 'PARTIAL FACE',
-    detail: skinTooSmooth ? 'abnormally smooth skin texture — no pore detail detected' : 'skin texture within normal range'
-  };
+  const eS = (esh/et)>.12 ? Math.min(90,((esh/et)-.12)*500) : 0;
+  return { score:Math.min(100,skinS*.6+eS*.4), lbl:sc>400?'FACE FOUND':'PARTIAL',
+    detail:ss<9?'unnaturally smooth skin — AI plasticky texture':'skin within normal range' };
 }
 
-// ── SIGNAL 5: COLOR CHANNEL FORENSICS ──
-// AI generators produce specific RGB distribution signatures
-async function analyzeColorChannels(imageData) {
-  const data = imageData.data;
-  const n = data.length / 4;
-
-  // --- HISTOGRAM ANALYSIS ---
-  // AI images: smooth, bell-curve histograms per channel
-  // Real photos: irregular histograms with gaps and spikes
-  const histR = new Int32Array(256);
-  const histG = new Int32Array(256);
-  const histB = new Int32Array(256);
-  for (let i = 0; i < data.length; i += 4) {
-    histR[data[i]]++;
-    histG[data[i+1]]++;
-    histB[data[i+2]]++;
-  }
-
-  // Smoothness of histogram (AI = very smooth)
-  let histSmooth = 0;
-  for (let v = 1; v < 255; v++) {
-    const rSmooth = Math.abs(histR[v] - (histR[v-1]+histR[v+1])/2);
-    const gSmooth = Math.abs(histG[v] - (histG[v-1]+histG[v+1])/2);
-    const bSmooth = Math.abs(histB[v] - (histB[v-1]+histB[v+1])/2);
-    histSmooth += (rSmooth + gSmooth + bSmooth) / 3;
-  }
-  const avgHistSmooth = histSmooth / 254;
-  // Real photos: high roughness (1000-5000). AI: low roughness (100-500)
-  const histScore = avgHistSmooth < 600 ? Math.min(90, (600-avgHistSmooth)/8) : 0;
-
-  // --- SATURATION CLUSTERING ---
-  // AI images have very consistent saturation (everything looks "polished")
-  let satValues = [];
-  for (let i = 0; i < data.length; i += 16) {
-    const r=data[i]/255, g=data[i+1]/255, b=data[i+2]/255;
-    const max=Math.max(r,g,b), min=Math.min(r,g,b);
-    const sat = max > 0 ? (max-min)/max : 0;
-    satValues.push(sat);
-  }
-  const satMean = satValues.reduce((a,b)=>a+b,0)/satValues.length;
-  const satStd = Math.sqrt(satValues.reduce((s,v)=>s+(v-satMean)**2,0)/satValues.length);
-  // AI: satStd < 0.18 (too consistent). Real: 0.22+
-  const satScore = satStd < 0.20 ? Math.min(80, (0.20-satStd)*400) : 0;
-
-  // --- IMPOSSIBLE COLORS ---
-  // AI images sometimes produce colors outside natural gamut
-  let impossibleColors = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    const r=data[i], g=data[i+1], b=data[i+2];
-    // Extremely saturated yet bright = unnatural
-    const max=Math.max(r,g,b), min=Math.min(r,g,b);
-    if (max > 220 && min < 30 && max-min > 200) impossibleColors++;
-  }
-  const impossibleScore = Math.min(60, (impossibleColors/n)*2000);
-
-  return Math.min(100, Math.max(0, histScore*0.45 + satScore*0.35 + impossibleScore*0.20));
+async function sColor(id) {
+  const d=id.data;
+  const hR=new Int32Array(256),hG=new Int32Array(256),hB=new Int32Array(256);
+  for (let i=0;i<d.length;i+=4){hR[d[i]]++;hG[d[i+1]]++;hB[d[i+2]]++;}
+  let hs=0;
+  for (let v=1;v<255;v++) hs+=Math.abs(hR[v]-(hR[v-1]+hR[v+1])/2)+Math.abs(hG[v]-(hG[v-1]+hG[v+1])/2)+Math.abs(hB[v]-(hB[v-1]+hB[v+1])/2);
+  const hS = hs/254<600 ? Math.min(90,(600-hs/254)/8) : 0;
+  let sv=[];
+  for (let i=0;i<d.length;i+=16) { const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255; sv.push(Math.max(r,g,b)-Math.min(r,g,b)); }
+  const sm=sv.reduce((a,b)=>a+b)/sv.length;
+  const ss=Math.sqrt(sv.reduce((s,v)=>s+(v-sm)**2,0)/sv.length);
+  return Math.min(100, hS*.55 + (ss<.20?Math.min(80,(.20-ss)*400):0)*.45);
 }
 
-// ── SIGNAL 6: METADATA + COMPRESSION PATTERN ANALYSIS ──
-// AI images have zero EXIF, perfect PNG or specific JPEG patterns
-async function analyzeCompression(imageData, width, height) {
-  const data = imageData.data;
-
-  // --- BLOCK BOUNDARY ANALYSIS ---
-  // Real JPEG photos show natural 8x8 DCT block boundaries
-  // AI-generated PNGs or AI-optimized JPEGs show different patterns
-  let naturalBlockBoundaries = 0, blockCount = 0;
-  for (let y = 8; y < height; y += 8) {
-    for (let x = 0; x < width-1; x++) {
-      const i1 = ((y-1)*width+x)*4;
-      const i2 = (y*width+x)*4;
-      const diff = Math.abs((0.299*data[i1]+0.587*data[i1+1]+0.114*data[i1+2]) -
-                            (0.299*data[i2]+0.587*data[i2+1]+0.114*data[i2+2]));
-      if (diff > 8 && diff < 40) naturalBlockBoundaries++;
-      blockCount++;
+async function sHands(id, w, h) {
+  const d=id.data, mask=new Uint8Array(w*h); let sc=0;
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++) {
+    const i=(y*w+x)*4, r=d[i],g=d[i+1],b=d[i+2];
+    if ((r>95&&g>40&&b>20&&(Math.max(r,g,b)-Math.min(r,g,b))>15&&Math.abs(r-g)>15&&r>g&&r>b)||
+        (r>100&&g>60&&b>40&&r-b>30&&r-g>10&&r-g<50)) { mask[y*w+x]=1; sc++; }
+  }
+  if (sc<150) return { score:20, lbl:'NO HANDS', detail:'no hand regions detected' };
+  let maxP=0; const sy=Math.max(1,Math.floor(h/20));
+  for (let y=sy;y<h-sy;y+=sy) {
+    let t=0, inS=false;
+    for (let x=1;x<w;x++) { const c=mask[y*w+x]===1; if(c!==inS){t++;inS=c;} }
+    maxP = Math.max(maxP,Math.floor(t/2));
+  }
+  let bc=0, bt=0;
+  for (let y=1;y<h-1;y+=2) for (let x=1;x<w-1;x+=2) {
+    if (mask[y*w+x]) {
+      const nb=[mask[(y-1)*w+x],mask[(y+1)*w+x],mask[y*w+x-1],mask[y*w+x+1]];
+      const bor=nb.filter(n=>!n).length;
+      if (bor>0&&bor<4) bc++; bt++;
     }
   }
-  // Natural photos: moderate boundary contrast. AI clean images: very few
-  const boundaryRatio = naturalBlockBoundaries / Math.max(blockCount, 1);
-  const compressionScore = boundaryRatio < 0.04 ? Math.min(85, (0.04-boundaryRatio)*2000) : Math.max(0, 20-boundaryRatio*200);
-
-  // --- PIXEL VALUE DISTRIBUTION ---
-  // AI generators often avoid certain pixel values (near 0 and 255)
-  // Real photos use the full dynamic range more naturally
-  let nearBlack = 0, nearWhite = 0, midtones = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    const lum = 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-    if (lum < 15) nearBlack++;
-    else if (lum > 240) nearWhite++;
-    else midtones++;
-  }
-  const total = nearBlack + nearWhite + midtones;
-  const extremeRatio = (nearBlack + nearWhite) / total;
-  // AI images: extremeRatio often very low (0.01-0.05) — midtone heavy
-  const extremeScore = extremeRatio < 0.04 ? Math.min(70, (0.04-extremeRatio)*1500) : 0;
-
-  // --- LOCAL CONTRAST UNIFORMITY ---
-  // AI images have suspiciously uniform local contrast everywhere
-  let localContrasts = [];
-  for (let y = 0; y < Math.min(height, 200)-10; y += 10) {
-    for (let x = 0; x < Math.min(width, 200)-10; x += 10) {
-      let minL = 255, maxL = 0;
-      for (let dy = 0; dy < 10; dy++) {
-        for (let dx = 0; dx < 10; dx++) {
-          const i = ((y+dy)*width+(x+dx))*4;
-          const l = 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-          minL = Math.min(minL, l);
-          maxL = Math.max(maxL, l);
-        }
-      }
-      localContrasts.push(maxL - minL);
-    }
-  }
-  const lcMean = localContrasts.reduce((a,b)=>a+b,0)/localContrasts.length;
-  const lcStd = Math.sqrt(localContrasts.reduce((s,v)=>s+(v-lcMean)**2,0)/localContrasts.length);
-  const lcCV = lcMean > 0 ? lcStd/lcMean : 1;
-  // AI: lcCV < 0.4 (too uniform contrast). Real: 0.6+
-  const lcScore = lcCV < 0.5 ? Math.min(80, (0.5-lcCV)*160) : 0;
-
-  return Math.min(100, Math.max(0, compressionScore*0.40 + extremeScore*0.30 + lcScore*0.30));
+  const br=bt>0?bc/bt:0;
+  const pA = (maxP>7||(maxP>0&&maxP<2)) ? 40 : 0;
+  const sH = br<.15&&sc>400 ? (.15-br)*250 : 0;
+  return { score:Math.min(100,Math.max(0,pA+sH*.5)), lbl:`${maxP} PROTRUSIONS`,
+    detail:pA>0?`abnormal finger count (${maxP}) — AI adds/removes fingers`:'hand anatomy within normal range' };
 }
 
-
-// ══════════════════════════════════════════════════
-// NEW ANATOMICAL & PHYSICAL DETECTION ALGORITHMS
-// Based on: hands/fingers, lighting physics,
-//           background coherence, text/geometry
-// ══════════════════════════════════════════════════
-
-// ── SIGNAL 6: HAND & FINGER ANATOMY DETECTION ──
-// AI generators consistently fail at hands:
-// extra fingers, merged fingers, impossible bends,
-// wrong number of knuckles, floating/detached fingers
-async function analyzeHandAnatomy(imageData, width, height) {
-  const data = imageData.data;
-
-  // --- FLESH REGION TOPOLOGY ---
-  // Detect skin-colored regions and analyze their shape complexity
-  // Real hands: 5 distinct digit protrusions, specific aspect ratios
-  // AI hands: irregular blobs, too many or too few protrusions
-
-  // Build skin mask
-  const skinMask = new Uint8Array(width * height);
-  let skinCount = 0;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = (y*width+x)*4;
-      const r=data[i], g=data[i+1], b=data[i+2];
-      // Multi-ethnicity skin detection
-      const isSkin = (
-        (r>95&&g>40&&b>20&&Math.max(r,g,b)-Math.min(r,g,b)>15&&Math.abs(r-g)>15&&r>g&&r>b) ||
-        (r>200&&g>180&&b>160&&Math.abs(r-g)<20) ||
-        (r>100&&g>60&&b>40&&r-b>30&&r-g>10&&r-g<50)
-      );
-      if (isSkin) { skinMask[y*width+x]=1; skinCount++; }
-    }
-  }
-
-  if (skinCount < 200) {
-    return { score: 25, label: 'NO HANDS DETECTED', detail: 'no hand/skin regions found — cannot assess anatomy' };
-  }
-
-  // --- PROTRUSION COUNT (finger detection proxy) ---
-  // Scan horizontal slices and count skin "islands" transitions
-  // This approximates counting finger-like protrusions
-  let maxProtrusions = 0;
-  const stepY = Math.floor(height / 20);
-  for (let y = stepY; y < height - stepY; y += stepY) {
-    let transitions = 0, inSkin = false;
-    for (let x = 1; x < width; x++) {
-      const curr = skinMask[y*width+x] === 1;
-      if (curr !== inSkin) { transitions++; inSkin = curr; }
-    }
-    const protrusions = Math.floor(transitions / 2);
-    if (protrusions > maxProtrusions) maxProtrusions = protrusions;
-  }
-
-  // --- SKIN REGION SMOOTHNESS ---
-  // AI hands: edges are too smooth/rounded
-  // Real hands: complex boundary with knuckle indentations
-  let boundaryComplexity = 0, boundaryCount = 0;
-  for (let y = 1; y < height-1; y += 2) {
-    for (let x = 1; x < width-1; x += 2) {
-      if (skinMask[y*width+x] === 1) {
-        const neighbors = [
-          skinMask[(y-1)*width+x], skinMask[(y+1)*width+x],
-          skinMask[y*width+x-1], skinMask[y*width+x+1]
-        ];
-        const borderCount = neighbors.filter(n=>n===0).length;
-        if (borderCount > 0 && borderCount < 4) {
-          // Count direction changes in boundary (complexity)
-          boundaryComplexity++;
-        }
-        boundaryCount++;
+async function sLight(id, w, h) {
+  const d=id.data; let vecs=[], sp=0, tot=0;
+  const st=Math.max(1,Math.floor(Math.min(w,h)/30));
+  for (let y=st;y<h-st;y+=st) for (let x=st;x<w-st;x+=st) {
+    const i=(y*w+x)*4, li=lum(d,i);
+    if (li<60) {
+      let nx=0,ny=0,bd=Infinity;
+      for (let dy=-3;dy<=3;dy++) for (let dx=-3;dx<=3;dx++) {
+        if(!dx&&!dy) continue;
+        const ni=((y+dy*st)*w+(x+dx*st))*4;
+        if(ni<0||ni>=d.length) continue;
+        const nl=lum(d,ni);
+        if(nl>150){const dist=Math.sqrt(dx*dx+dy*dy);if(dist<bd){bd=dist;nx=dx;ny=dy;}}
       }
+      if (bd<Infinity) vecs.push({x:nx,y:ny});
     }
+    const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;
+    const li2=.299*r+.587*g+.114*b, sat=Math.max(r,g,b)-Math.min(r,g,b);
+    if (li2>.92&&sat<.08) sp++; tot++;
   }
-  const boundaryRatio = boundaryCount > 0 ? boundaryComplexity/boundaryCount : 0;
-
-  // --- ASPECT RATIO OF SKIN BLOBS ---
-  // Fingers have specific aspect ratios (long & thin)
-  // AI fingers are often too wide, too short, or merged
-  let minX=width, maxX=0, minY=height, maxY=0;
-  for (let y=0;y<height;y++) for (let x=0;x<width;x++) {
-    if (skinMask[y*width+x]===1) {
-      minX=Math.min(minX,x); maxX=Math.max(maxX,x);
-      minY=Math.min(minY,y); maxY=Math.max(maxY,y);
-    }
+  let sScore=0;
+  if (vecs.length>5) {
+    const ax=vecs.reduce((s,v)=>s+v.x,0)/vecs.length, ay=vecs.reduce((s,v)=>s+v.y,0)/vecs.length;
+    sScore=Math.min(80,vecs.reduce((s,v)=>s+(v.x-ax)**2+(v.y-ay)**2,0)/vecs.length*15);
   }
-  const bboxW = maxX-minX, bboxH = maxY-minY;
-  const skinDensity = skinCount / ((bboxW+1)*(bboxH+1));
-
-  // Too dense = merged fingers. Too sparse = floating fragments
-  const densityAnomaly = (skinDensity > 0.85 || skinDensity < 0.05) ? 35 : 0;
-
-  // --- FINAL HAND SCORE ---
-  // Abnormal protrusion count: not 3-6 = suspicious
-  const protrusionAnomaly = (maxProtrusions > 7 || (maxProtrusions > 0 && maxProtrusions < 2)) ? 40 : 0;
-  // Low boundary complexity = AI smooth hand
-  const smoothHandScore = boundaryRatio < 0.15 && skinCount > 500 ? (0.15-boundaryRatio)*250 : 0;
-
-  const score = Math.min(100, protrusionAnomaly + smoothHandScore*0.5 + densityAnomaly);
-
-  let detail = 'hand anatomy within expected parameters';
-  if (protrusionAnomaly > 0) detail = `abnormal finger count detected (${maxProtrusions} protrusions) — AI commonly adds/removes fingers`;
-  else if (smoothHandScore > 30) detail = 'unnaturally smooth hand boundary — real hands show knuckle texture and imperfections';
-  else if (densityAnomaly > 0) detail = 'finger regions appear merged or fragmented — classic AI hand generation failure';
-
-  return { score: Math.max(0, score), label: `${maxProtrusions} PROTRUSIONS`, detail };
+  const spS=Math.min(70,Math.max(0,((sp/Math.max(tot,1))-.05)*800));
+  const score=Math.min(100,sScore*.6+spS*.4);
+  return { score:Math.max(0,score), lbl:score>50?'INCONSISTENT':'CONSISTENT',
+    detail:sScore>40?'shadows point in conflicting directions — fake lighting':
+           spS>35?'specular highlights placed incorrectly':'lighting physics consistent' };
 }
 
-// ── SIGNAL 7: LIGHTING & SHADOW PHYSICS ──
-// AI struggles with physically consistent lighting:
-// shadows pointing wrong direction, missing shadows,
-// multiple light sources that don't exist, unrealistic specular
-async function analyzeLightingPhysics(imageData, width, height) {
-  const data = imageData.data;
-
-  // --- SHADOW CONSISTENCY ---
-  // Find dark regions (shadows) and check their directional consistency
-  // AI: shadows point in conflicting directions
-  // Real: shadows mostly consistent from one light source
-
-  // Sample shadow-like regions (dark areas near bright areas)
-  let shadowVectors = [];
-  const sampleStep = Math.floor(Math.min(width,height)/30);
-
-  for (let y = sampleStep; y < height-sampleStep; y += sampleStep) {
-    for (let x = sampleStep; x < width-sampleStep; x += sampleStep) {
-      const i = (y*width+x)*4;
-      const lum = 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-
-      if (lum < 60) { // Dark region = potential shadow
-        // Find nearest bright region and record direction
-        let nearestBrightDist = Infinity;
-        let brightDirX = 0, brightDirY = 0;
-
-        for (let dy=-3;dy<=3;dy++) for (let dx=-3;dx<=3;dx++) {
-          if (dx===0&&dy===0) continue;
-          const ni = ((y+dy*sampleStep)*width+(x+dx*sampleStep))*4;
-          if (ni < 0 || ni >= data.length) continue;
-          const nLum = 0.299*data[ni]+0.587*data[ni+1]+0.114*data[ni+2];
-          if (nLum > 150) {
-            const dist = Math.sqrt(dx*dx+dy*dy);
-            if (dist < nearestBrightDist) {
-              nearestBrightDist = dist;
-              brightDirX = dx; brightDirY = dy;
-            }
-          }
-        }
-        if (nearestBrightDist < Infinity) {
-          shadowVectors.push({ x: brightDirX, y: brightDirY });
-        }
+async function sBg(id, w, h) {
+  const d=id.data, cx2=w/2, cy2=h/2, fr=Math.min(w,h)*.35;
+  let fgV=0,bgV=0,fgC=0,bgC=0; const bs=12;
+  for (let y=0;y<h-bs;y+=bs) for (let x=0;x<w-bs;x+=bs) {
+    const dist=Math.sqrt((x+bs/2-cx2)**2+(y+bs/2-cy2)**2);
+    let vals=[];
+    for (let dy=0;dy<bs;dy++) for (let dx=0;dx<bs;dx++) vals.push(lum(d,((y+dy)*w+(x+dx))*4));
+    const m=vals.reduce((a,b)=>a+b)/vals.length;
+    const v=vals.reduce((s,v)=>s+(v-m)**2,0)/vals.length;
+    if (dist<fr){fgV+=v;fgC++;}else{bgV+=v;bgC++;}
+  }
+  const fgAvg=fgC?fgV/fgC:0, bgAvg=bgC?bgV/bgC:1;
+  const ratio=fgAvg/bgAvg;
+  const inco=ratio>4?Math.min(80,(ratio-4)*12):0;
+  let tm=0, tt=0; const ts=32;
+  if (w>ts*3&&h>ts*3) {
+    for (let y=0;y<Math.min(h-ts*2,160);y+=ts) for (let x=0;x<Math.min(w-ts*2,160);x+=ts) {
+      let diff=0,cnt=0;
+      for (let dy=0;dy<ts;dy+=4) for (let dx=0;dx<ts;dx+=4) {
+        const i1=((y+dy)*w+(x+dx))*4, i2=((y+dy)*w+(x+dx+ts))*4;
+        if (i2<d.length) {diff+=Math.abs(d[i1]-d[i2])+Math.abs(d[i1+1]-d[i2+1])+Math.abs(d[i1+2]-d[i2+2]);cnt++;}
       }
+      if (cnt&&diff/cnt<8) tm++; tt++;
     }
   }
-
-  let shadowScore = 0;
-  if (shadowVectors.length > 5) {
-    // Check consistency of shadow directions
-    const avgX = shadowVectors.reduce((s,v)=>s+v.x,0)/shadowVectors.length;
-    const avgY = shadowVectors.reduce((s,v)=>s+v.y,0)/shadowVectors.length;
-    const variance = shadowVectors.reduce((s,v)=>s+(v.x-avgX)**2+(v.y-avgY)**2,0)/shadowVectors.length;
-    // High variance = shadows in inconsistent directions = AI
-    shadowScore = Math.min(80, variance * 15);
-  }
-
-  // --- SPECULAR HIGHLIGHT ANALYSIS ---
-  // Real objects: specular highlights follow physical law (same direction as light)
-  // AI: highlights appear where they shouldn't (on rough surfaces, wrong position)
-  let specularCount = 0, specularTotal = 0;
-  for (let i=0; i<data.length; i+=4) {
-    const r=data[i]/255, g=data[i+1]/255, b=data[i+2]/255;
-    const lum = 0.299*r+0.587*g+0.114*b;
-    const sat = Math.max(r,g,b)-Math.min(r,g,b);
-    // Specular highlights: very bright AND nearly desaturated (white-ish)
-    if (lum > 0.92 && sat < 0.08) specularCount++;
-    specularTotal++;
-  }
-  const specularRatio = specularCount/specularTotal;
-  // AI images: often have too many perfect white highlights
-  const specularScore = specularRatio > 0.05 ? Math.min(70, (specularRatio-0.05)*800) : 0;
-
-  // --- AMBIENT OCCLUSION CHECK ---
-  // Real scenes: corners and crevices are darker (AO)
-  // AI: often missing AO or applies it wrong
-  let darkCornerRatio = 0;
-  const margin = Math.floor(Math.min(width,height)*0.1);
-  let cornerDark=0, cornerTotal=0;
-  for (let y=0; y<margin; y++) for (let x=0; x<margin; x++) {
-    const i=(y*width+x)*4;
-    const lum=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-    if (lum < 80) cornerDark++;
-    cornerTotal++;
-  }
-  darkCornerRatio = cornerDark/Math.max(cornerTotal,1);
-  // Very bright corners = missing ambient occlusion = AI
-  const aoScore = darkCornerRatio < 0.05 ? 20 : 0;
-
-  const finalScore = Math.min(100, shadowScore*0.55 + specularScore*0.30 + aoScore*0.15);
-  let detail = 'lighting physics appear consistent';
-  if (shadowScore > 40) detail = 'shadow directions are inconsistent — multiple conflicting light sources suggest AI generation';
-  else if (specularScore > 35) detail = 'specular highlights placed incorrectly — violates physics of light reflection';
-  else if (aoScore > 15) detail = 'missing ambient occlusion in corners — AI often skips physically accurate shadow darkening';
-
-  return { score: Math.max(0, finalScore), label: finalScore>50?'INCONSISTENT':'CONSISTENT', detail };
+  const tS=tt?Math.min(70,(tm/tt)*150):0;
+  const score=Math.min(100,inco*.55+tS*.45);
+  return { score:Math.max(0,score), lbl:score>50?'INCOHERENT':'COHERENT',
+    detail:inco>40?'background abnormally degraded — AI artifact':
+           tS>35?'repeating tile artifacts in background':'background coherence normal' };
 }
 
-// ── SIGNAL 8: BACKGROUND COHERENCE ──
-// AI prioritizes foreground subject, background degrades:
-// melting/warped objects, impossible depth, repeating texture tiles
-async function analyzeBackgroundCoherence(imageData, width, height) {
-  const data = imageData.data;
-
-  // Divide image into foreground (center) and background (edges)
-  const cx = width/2, cy = height/2;
-  const fgRadius = Math.min(width,height)*0.35;
-
-  let fgVariance=0, bgVariance=0, fgCount=0, bgCount=0;
-  const blockSize = 12;
-
-  for (let y=0; y<height-blockSize; y+=blockSize) {
-    for (let x=0; x<width-blockSize; x+=blockSize) {
-      const distFromCenter = Math.sqrt((x+blockSize/2-cx)**2+(y+blockSize/2-cy)**2);
-      let vals=[];
-      for (let dy=0;dy<blockSize;dy++) for (let dx=0;dx<blockSize;dx++) {
-        const i=((y+dy)*width+(x+dx))*4;
-        vals.push(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]);
-      }
-      const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
-      const variance=vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length;
-
-      if (distFromCenter < fgRadius) { fgVariance+=variance; fgCount++; }
-      else { bgVariance+=variance; bgCount++; }
-    }
+async function sTextGeo(id, w, h) {
+  const d=id.data; let hEdges=[], viol=0;
+  for (let y=2;y<h-2;y+=4) for (let x=2;x<w-2;x+=4) {
+    if (Math.abs(lum(d,((y-2)*w+x)*4)-lum(d,((y+2)*w+x)*4))>40) hEdges.push({x,y});
   }
-
-  const avgFg = fgCount>0 ? fgVariance/fgCount : 0;
-  const avgBg = bgCount>0 ? bgVariance/bgCount : 0;
-
-  // AI: background is unrealistically blurry/uniform compared to foreground
-  // Real photos: background naturally blurred by DOF but consistently so
-  const fgBgRatio = avgBg>0 ? avgFg/avgBg : 1;
-  const incoherenceScore = fgBgRatio > 4 ? Math.min(80, (fgBgRatio-4)*12) : 0;
-
-  // --- TILE/REPEAT DETECTION ---
-  // AI backgrounds often have repeating texture tiles
-  let tileScore = 0;
-  const tileSize = 32;
-  if (width > tileSize*3 && height > tileSize*3) {
-    let tileMatches = 0, tileTests = 0;
-    for (let y=0; y<Math.min(height-tileSize*2, 200); y+=tileSize) {
-      for (let x=0; x<Math.min(width-tileSize*2, 200); x+=tileSize) {
-        const dist = (y2,x2) => {
-          let diff=0;
-          for (let dy=0;dy<tileSize;dy+=4) for (let dx=0;dx<tileSize;dx+=4) {
-            const i1=((y+dy)*width+(x+dx))*4;
-            const i2=((y2+dy)*width+(x2+dx))*4;
-            if (i1>=data.length||i2>=data.length) continue;
-            diff+=Math.abs(data[i1]-data[i2])+Math.abs(data[i1+1]-data[i2+1])+Math.abs(data[i1+2]-data[i2+2]);
-          }
-          return diff/((tileSize/4)*(tileSize/4)*3);
-        };
-        // Compare to tile shifted by tileSize
-        if (x+tileSize*2 < width) {
-          const similarity = dist(y, x+tileSize);
-          if (similarity < 8) tileMatches++;
-          tileTests++;
-        }
-      }
-    }
-    tileScore = tileTests>0 ? Math.min(70, (tileMatches/tileTests)*150) : 0;
-  }
-
-  // --- EDGE BLUR CONSISTENCY ---
-  // AI: abrupt transitions between sharp subject and blurred background
-  let edgeTransitions = [], prevLum = -1;
-  const midY = Math.floor(height/2);
-  for (let x=1; x<width; x++) {
-    const i=(midY*width+x)*4;
-    const lum=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-    if (prevLum >= 0) edgeTransitions.push(Math.abs(lum-prevLum));
-    prevLum = lum;
-  }
-  const avgTrans = edgeTransitions.reduce((a,b)=>a+b,0)/edgeTransitions.length;
-  const maxTrans = Math.max(...edgeTransitions);
-  // Unnaturally sharp isolated transitions = AI subject cutout
-  const sharpCutScore = maxTrans > avgTrans*8 ? Math.min(50, (maxTrans/avgTrans - 8)*5) : 0;
-
-  const finalScore = Math.min(100, incoherenceScore*0.45 + tileScore*0.35 + sharpCutScore*0.20);
-  let detail = 'background coherence within normal range';
-  if (incoherenceScore > 40) detail = 'background is abnormally degraded vs foreground — AI deprioritizes background fidelity';
-  else if (tileScore > 35) detail = 'repeating texture tiles detected in background — AI generates repetitive patterns';
-  else if (sharpCutScore > 25) detail = 'unnaturally sharp subject-background boundary — AI subject extraction artifact';
-
-  return { score: Math.max(0, finalScore), label: finalScore>50?'INCOHERENT':'COHERENT', detail };
-}
-
-// ── SIGNAL 9: TEXT & GEOMETRIC CONSISTENCY ──
-// AI consistently fails: nonsensical text, warped straight lines,
-// perspective errors, impossible vanishing points
-async function analyzeTextGeometry(imageData, width, height) {
-  const data = imageData.data;
-
-  // --- LINE STRAIGHTNESS (VANISHING POINT CONSISTENCY) ---
-  // Real architecture: straight lines (edges of buildings, roads) are truly straight
-  // AI: lines curve, bend, or converge incorrectly
-
-  // Detect near-vertical and near-horizontal high-contrast edges
-  let hEdges=[], vEdges=[];
-  for (let y=2; y<height-2; y+=4) {
-    for (let x=2; x<width-2; x+=4) {
-      const i=(y*width+x)*4;
-      const il=(y*width+x-2)*4, ir=(y*width+x+2)*4;
-      const iu=((y-2)*width+x)*4, id=((y+2)*width+x)*4;
-
-      const lum = v=>0.299*data[v]+0.587*data[v+1]+0.114*data[v+2];
-      const gx=Math.abs(lum(il)-lum(ir));
-      const gy=Math.abs(lum(iu)-lum(id));
-
-      if (gy>40&&gy>gx*2) hEdges.push({x,y,strength:gy});
-      if (gx>40&&gx>gy*2) vEdges.push({x,y,strength:gx});
-    }
-  }
-
-  // Check if strong horizontal edges are actually horizontal
-  let straightnessViolations = 0;
-  if (hEdges.length > 20) {
-    // Group edges by approximate Y position
-    const yGroups = {};
-    hEdges.forEach(e => {
-      const gy = Math.round(e.y/20)*20;
-      if (!yGroups[gy]) yGroups[gy]=[];
-      yGroups[gy].push(e);
-    });
-    Object.values(yGroups).forEach(group => {
-      if (group.length < 3) return;
-      const ys = group.map(e=>e.y);
-      const yMean = ys.reduce((a,b)=>a+b)/ys.length;
-      const yStd = Math.sqrt(ys.reduce((s,v)=>s+(v-yMean)**2)/ys.length);
-      // High Y variance for a "horizontal" line = curved/warped
-      if (yStd > 8) straightnessViolations++;
+  if (hEdges.length>20) {
+    const yG={};
+    hEdges.forEach(e=>{const gy=Math.round(e.y/20)*20;if(!yG[gy])yG[gy]=[];yG[gy].push(e.y);});
+    Object.values(yG).forEach(ys=>{
+      if(ys.length<3) return;
+      const m=ys.reduce((a,b)=>a+b)/ys.length;
+      if(Math.sqrt(ys.reduce((a,v)=>a+(v-m)**2,0)/ys.length)>8) viol++;
     });
   }
-  const geometryScore = Math.min(80, straightnessViolations * 18);
-
-  // --- LOCAL CONTRAST CHAOS (text region detection) ---
-  // Text regions: extremely high local contrast in small areas
-  // AI text: characters malformed, creating chaotic micro-contrast patterns
-  let textlikeRegions = 0, totalRegions = 0;
-  const tBlockSize = 8;
-  for (let y=0; y<height-tBlockSize; y+=tBlockSize) {
-    for (let x=0; x<width-tBlockSize; x+=tBlockSize) {
-      let maxL=0, minL=255, switchCount=0, prevL=-1;
-      for (let dy=0;dy<tBlockSize;dy++) {
-        for (let dx=0;dx<tBlockSize;dx++) {
-          const i=((y+dy)*width+(x+dx))*4;
-          const l=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
-          if (l>maxL) maxL=l;
-          if (l<minL) minL=l;
-          if (prevL>=0 && Math.abs(l-prevL)>25) switchCount++;
-          prevL=l;
-        }
-      }
-      const contrast = maxL-minL;
-      // Text-like: high contrast + many switches in small area
-      if (contrast>100 && switchCount>6) textlikeRegions++;
-      totalRegions++;
+  const gS=Math.min(80,viol*18);
+  let tr=0, tt=0; const tb=8;
+  for (let y=0;y<h-tb;y+=tb) for (let x=0;x<w-tb;x+=tb) {
+    let maxL=0,minL=255,sw=0,prev=-1;
+    for (let dy=0;dy<tb;dy++) for (let dx=0;dx<tb;dx++) {
+      const l=lum(d,((y+dy)*w+(x+dx))*4);
+      if(l>maxL)maxL=l;if(l<minL)minL=l;
+      if(prev>=0&&Math.abs(l-prev)>25)sw++;prev=l;
     }
+    if(maxL-minL>100&&sw>6)tr++; tt++;
   }
-  const textRatio = textlikeRegions/Math.max(totalRegions,1);
-  // High text density with AI = garbled characters = high chaos score
-  const textChaosScore = textRatio > 0.08 ? Math.min(70, (textRatio-0.08)*350) : 0;
+  const tS=Math.min(70,Math.max(0,((tr/Math.max(tt,1))-.08)*350));
+  const score=Math.min(100,gS*.45+tS*.55);
+  return { score:Math.max(0,score), lbl:score>50?'ANOMALOUS':'CONSISTENT',
+    detail:gS>35?'straight lines warped — AI fails vanishing points':
+           tS>30?'chaotic text regions — AI generates unreadable characters':'geometry consistent' };
+}
 
-  // --- SYMMETRY AXIS VIOLATION ---
-  // AI faces: sometimes have weird axis-symmetry breaks (mismatched earrings, eyes)
-  // Check left/right halves of image for luminance symmetry violations
-  let symmetryError = 0, symCount = 0;
-  const halfW = Math.floor(width/2);
-  for (let y=Math.floor(height*0.2); y<Math.floor(height*0.8); y+=6) {
-    for (let x=0; x<halfW; x+=6) {
-      const i1=(y*width+x)*4;
-      const i2=(y*width+(width-1-x))*4;
-      const diff = Math.abs(
-        (0.299*data[i1]+0.587*data[i1+1]+0.114*data[i1+2]) -
-        (0.299*data[i2]+0.587*data[i2+1]+0.114*data[i2+2])
-      );
-      if (diff > 60) symmetryError++;
-      symCount++;
-    }
+// ════════════ HELPERS ════════════
+const lum = (d,i) => .299*d[i] + .587*d[i+1] + .114*d[i+2];
+const fmt  = v => v.toFixed(1)+'%';
+const pause= ms => new Promise(r=>setTimeout(r,ms));
+
+function pipe(n, state, val) {
+  const el = document.getElementById('p'+n);
+  el.className = 'prow ' + state;
+  if (val) document.getElementById('pv'+n).textContent = val;
+}
+function resetPipe() { for(let i=1;i<=10;i++) pipe(i,'idle','—'); }
+
+function setSig(n, score) {
+  const col = score>60?'var(--c2)':score>35?'var(--warn)':'var(--c3)';
+  const sb=document.getElementById('sb'+n), sp=document.getElementById('sp'+n);
+  if(sb){sb.style.width=Math.min(score,100)+'%';sb.style.background=col;}
+  if(sp){sp.textContent=score.toFixed(0)+'%';sp.style.color=col;}
+}
+
+function showResults(isFake, fake, S, details) {
+  const real = 100-fake;
+  const vc=document.getElementById('vCard');
+  const vt=document.getElementById('vTitle');
+  vc.className = 'v-card '+(isFake?'fake':'real');
+  vt.className = 'v-title '+(isFake?'fake':'real');
+  vt.textContent = isFake ? 'DEEPFAKE' : 'AUTHENTIC';
+  document.getElementById('vMeta').textContent = `CONFIDENCE ${Math.max(fake,real).toFixed(1)}% · ${isFake?'SYNTHETIC MEDIA DETECTED':'GENUINE MEDIA'}`;
+
+  setTimeout(()=>{
+    document.getElementById('fakeFill').style.width = fake+'%';
+    document.getElementById('realFill').style.width = real+'%';
+    document.getElementById('fakePct').textContent  = fake.toFixed(1)+'%';
+    document.getElementById('realPct').textContent  = real.toFixed(1)+'%';
+  },120);
+
+  const vals=[S.pixel,S.fft,S.ela,S.face,S.color,S.hand,S.lighting,S.background,S.textgeo,fake];
+  vals.forEach((v,i)=>{
+    const el=document.getElementById('m'+(i+1)); if(!el||v===undefined) return;
+    if(v>60){el.textContent='HIGH RISK';el.className='fg-v hot';}
+    else if(v>35){el.textContent='SUSPECT';el.className='fg-v flag';}
+    else{el.textContent='NORMAL';el.className='fg-v safe';}
+  });
+
+  // Gauge (r=35, circumference≈219)
+  const C=219, col=fake>65?'var(--c2)':fake>40?'var(--warn)':'var(--c3)';
+  const gf=document.getElementById('gFill');
+  gf.style.stroke=col; gf.style.strokeDasharray=C;
+  setTimeout(()=>gf.style.strokeDashoffset=C-(fake/100*C),120);
+  document.getElementById('gNum').textContent=fake.toFixed(0)+'%';
+  document.getElementById('gNum').style.color=col;
+
+  // Explanations
+  const exps=[];
+  if(S.pixel>50) exps.push('🔬 Near-zero sensor noise — AI images lack natural camera grain');
+  if(S.fft>50)   exps.push('🌊 GAN checkerboard in frequency domain — neural upsampling artifact');
+  if(S.ela>50)   exps.push('📊 ELA shows freshly generated content — no real editing history');
+  details.forEach(d=>{if(d&&d.score>50&&d.detail) exps.push(d.detail);});
+  if(exps.length) {
+    document.getElementById('expList').innerHTML = exps.map(e=>
+      `<div class="exp-item"><div class="exp-dot"></div><div class="exp-text">${e}</div></div>`
+    ).join('');
+    document.getElementById('expBox').classList.add('on');
   }
-  // Note: for portraits, some asymmetry is expected — but AI often has
-  // extreme local asymmetries (one ear missing, different-colored eyes)
-  const symRatio = symmetryError/Math.max(symCount,1);
-  // Very high OR very low asymmetry = suspicious
-  const symmetryScore = (symRatio > 0.35 || symRatio < 0.02) ?
-    Math.min(50, Math.abs(symRatio-0.18)*120) : 0;
-
-  const finalScore = Math.min(100, geometryScore*0.40 + textChaosScore*0.35 + symmetryScore*0.25);
-  let detail = 'text and geometric lines appear consistent';
-  if (geometryScore > 35) detail = 'straight lines are curved/warped — AI fails to maintain consistent vanishing points';
-  else if (textChaosScore > 30) detail = 'text-like regions contain chaotic patterns — AI generates visually plausible but nonsensical characters';
-  else if (symmetryScore > 25) detail = 'extreme facial asymmetry detected — mismatched eyes, ears, or jewelry are classic AI tells';
-
-  return { score: Math.max(0, finalScore), label: finalScore>50?'ANOMALOUS':'CONSISTENT', detail };
+  document.getElementById('verdWrap').classList.add('on');
 }
 
-// ── HELPER: set sidebar badge ──
-function setSidebar(id, score) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = score.toFixed(1) + '%';
-  el.className = 'mbs ' + (score>60?'danger':score>35?'':'safe');
-}
-
-// ── HELPER: set metric cell ──
-function setMetricCell(id, score) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (score > 60) { el.textContent='HIGH RISK'; el.className='mval danger'; }
-  else if (score > 35) { el.textContent='SUSPICIOUS'; el.className='mval flag'; }
-  else { el.textContent='NORMAL'; el.className='mval safe'; }
-}
-
-// ── DRAW HEATMAP ──
-function drawHeatmap(heatmapInfo, w, h) {
-  const canvas = document.getElementById('heatmapCanvas');
-  const img = document.getElementById('previewImg');
-  canvas.width = img.offsetWidth || w;
-  canvas.height = img.offsetHeight || h;
-  const ctx = canvas.getContext('2d');
-
-  const scaleX = canvas.width / w;
-  const scaleY = canvas.height / h;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const v = heatmapInfo.data[y * w + x];
-      if (v > 0.3) {
-        const r = Math.floor(255 * v);
-        const g = Math.floor(100 * (1 - v));
-        ctx.fillStyle = `rgba(${r},${g},0,${v * 0.7})`;
-        ctx.fillRect(x * scaleX, y * scaleY, scaleX + 1, scaleY + 1);
-      }
-    }
+function drawHeatmap(hm, tw, th) {
+  if(!hm) return;
+  const cv=document.getElementById('hmCv'), img=document.getElementById('prevImg');
+  cv.width=img.offsetWidth||tw; cv.height=img.offsetHeight||th;
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  const sX=cv.width/tw, sY=cv.height/th;
+  for(let y=0;y<th;y++) for(let x=0;x<tw;x++){
+    const v=hm.data[y*tw+x];
+    if(v>.28){ctx.fillStyle=`rgba(${Math.floor(255*v)},${Math.floor(55*(1-v))},0,${v*.72})`;ctx.fillRect(x*sX,y*sY,sX+1,sY+1);}
   }
 }
 
 function toggleHeatmap() {
-  heatmapVisible = !heatmapVisible;
-  const canvas = document.getElementById('heatmapCanvas');
-  canvas.className = 'heatmap-canvas' + (heatmapVisible ? ' active' : '');
-  document.getElementById('heatmapBtn').textContent = heatmapVisible ? '👁 HIDE MAP' : '🔥 HEATMAP';
+  hmOn = !hmOn;
+  document.getElementById('hmCv').className = 'hm-cv'+(hmOn?' on':'');
 }
 
-// ── SHOW FINAL RESULTS ──
-function showFinalResults(isFake, fakeProbability, scores, explanations) {
-  const realProbability = 100 - fakeProbability;
-
-  const vBox = document.getElementById('verdictBox');
-  const vText = document.getElementById('verdictText');
-  vBox.className = 'verdict-box ' + (isFake ? 'fake' : 'real');
-  vText.className = 'verdict-text ' + (isFake ? 'fake' : 'real');
-  vText.textContent = isFake ? 'DEEPFAKE' : 'AUTHENTIC';
-  document.getElementById('verdictScore').textContent =
-    `CONFIDENCE: ${Math.max(fakeProbability, realProbability).toFixed(1)}% | ${isFake ? 'SYNTHETIC' : 'GENUINE'} MEDIA`;
-
-  setTimeout(() => {
-    document.getElementById('fakeFill').style.width = fakeProbability.toFixed(1) + '%';
-    document.getElementById('realFill').style.width = realProbability.toFixed(1) + '%';
-    document.getElementById('fakePct').textContent = fakeProbability.toFixed(1) + '%';
-    document.getElementById('realPct').textContent = realProbability.toFixed(1) + '%';
-  }, 100);
-
-  // Metrics set inline in pipeline above
-
-  // Threat radial
-  const C = 314;
-  const radial = document.getElementById('radialFill');
-  radial.style.strokeDashoffset = C;
-  const col = fakeProbability > 65 ? '#ff003c' : fakeProbability > 40 ? '#ffb700' : '#39ff14';
-  radial.style.stroke = col;
-  setTimeout(() => { radial.style.strokeDashoffset = C - (fakeProbability / 100 * C); }, 100);
-  document.getElementById('threatPct').textContent = fakeProbability.toFixed(0) + '%';
-  document.getElementById('threatPct').style.color = col;
-
-  // Show explanations
-  if (explanations.length > 0) {
-    const list = document.getElementById('explanationList');
-    list.innerHTML = explanations.map(e =>
-      `<div class="exp-item"><div class="exp-dot"></div><div class="exp-text">${e}</div></div>`
-    ).join('');
-    document.getElementById('explanationBox').classList.add('active');
-  }
-
-  document.getElementById('resultsSection').classList.add('active');
-  log(`✓ FINAL VERDICT: ${isFake ? 'DEEPFAKE' : 'AUTHENTIC'} (${fakeProbability.toFixed(1)}%)`, isFake ? 'err' : 'ok');
-}
-
-// setMetric replaced by setMetricCell above
-
-function scoreClass(v) { return v > 55 ? 'danger' : v > 35 ? '' : 'safe'; }
-
-// ── SAVE TO DASHBOARD ──
-function saveScanResult(isFake, fakeProbability, scores) {
-  try {
-    const raw = localStorage.getItem('veridex_scans');
-    const scans = raw ? JSON.parse(raw) : [];
-    scans.unshift({
-      id: Date.now(),
-      ts: Date.now(),
-      file: document.getElementById('fileInput').files[0]?.name || 'unknown',
-      type: 'IMAGE',
-      verdict: isFake ? 'DEEPFAKE' : 'AUTHENTIC',
-      isFake,
-      confidence: Math.max(fakeProbability, 100 - fakeProbability).toFixed(1),
-      fakeConf: fakeProbability.toFixed(1),
-      models: {
-        xception: scores.pixel.toFixed(1),
-        efficientnet: scores.fft.toFixed(1),
-        freq: scores.ela.toFixed(1),
-        faceff: scores.face.toFixed(1)
-      },
-      signals: {
-        face: scores.face, freq: scores.fft,
-        blink: scores.color, gan: fakeProbability,
-        skin: scores.pixel, compression: scores.compression
-      }
-    });
-    if (scans.length > 500) scans.length = 500;
-    localStorage.setItem('veridex_scans', JSON.stringify(scans));
-  } catch(e) {}
-}
-
-// ── HELPERS ──
 function resetAll() {
-  document.getElementById('previewArea').classList.remove('active');
-  document.getElementById('uploadZone').style.display = '';
-  document.getElementById('analysisSteps').classList.remove('active');
-  document.getElementById('resultsSection').classList.remove('active');
-  document.getElementById('explanationBox').classList.remove('active');
-  document.getElementById('heatmapBtn').style.display = 'none';
-  document.getElementById('fileInput').value = '';
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('previewImg').src = '';
-  document.getElementById('radialFill').style.strokeDashoffset = '314';
-  document.getElementById('threatPct').textContent = '—';
-  document.getElementById('analyzeBtn').disabled = false;
-  heatmapVisible = false; heatmapData = null; currentImage = null;
-  ['step1','step2','step3','step4','step5','step6','step7'].forEach(id => setStep(id.replace('step',''), 'idle', '—'));
-  log('SESSION RESET', 'warn');
+  curImg=null; hmData=null; hmOn=false;
+  document.getElementById('dropZone').style.display='';
+  ['prevWrap','pipeWrap'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('verdWrap').classList.remove('on');
+  document.getElementById('expBox').classList.remove('on');
+  document.getElementById('fileIn').value='';
+  document.getElementById('prevImg').src='';
+  document.getElementById('hmCv').className='hm-cv';
+  document.getElementById('scanLine').classList.remove('on');
+  document.getElementById('gFill').style.strokeDashoffset='219';
+  document.getElementById('gNum').textContent='—';
+  document.getElementById('runBtn').disabled=false;
+  for(let i=1;i<=9;i++){const sb=document.getElementById('sb'+i),sp=document.getElementById('sp'+i);if(sb)sb.style.width='0';if(sp){sp.textContent='—';sp.style.color='var(--muted2)';}}
+  resetPipe();
+  log('SESSION RESET','w');
 }
 
-function setStep(n, state, val) {
-  const el = document.getElementById('step' + n);
-  el.className = 'step ' + state;
-  if (val) document.getElementById('sv' + n).textContent = val;
+function saveScan(isFake, fake, S) {
+  try {
+    const raw=localStorage.getItem('veridex_scans');
+    const scans=raw?JSON.parse(raw):[];
+    const f=document.getElementById('fileIn').files[0];
+    scans.unshift({id:Date.now(),ts:Date.now(),file:f?.name||'unknown',type:'IMAGE',
+      verdict:isFake?'DEEPFAKE':'AUTHENTIC',isFake,
+      confidence:Math.max(fake,100-fake).toFixed(1),fakeConf:fake.toFixed(1),
+      models:{xception:S.pixel.toFixed(1),efficientnet:S.fft.toFixed(1),freq:S.ela.toFixed(1),faceff:S.face.toFixed(1)},
+      signals:{face:S.face,freq:S.fft,blink:S.color,gan:fake,skin:S.pixel,compression:S.hand}
+    });
+    if(scans.length>500)scans.length=500;
+    localStorage.setItem('veridex_scans',JSON.stringify(scans));
+  } catch(e){}
 }
 
-function setDot(n, state, status) {
-  const dot = document.getElementById('dot' + n);
-  const st = document.getElementById('st' + n);
-  dot.className = 'ml-dot ' + state;
-  if (st) st.textContent = status;
+function log(msg, type='i') {
+  const el=document.getElementById('logWrap');
+  const t=new Date().toTimeString().slice(0,8);
+  const div=document.createElement('div'); div.className='log-e';
+  div.innerHTML=`<div class="log-t">${t}</div><div class="log-m ${type}">${msg}</div>`;
+  el.appendChild(div); el.scrollTop=el.scrollHeight;
 }
 
-function log(msg, type = 'info') {
-  const logEl = document.getElementById('logList');
-  const now = new Date();
-  const time = now.toTimeString().slice(0,8);
-  const entry = document.createElement('div');
-  entry.className = 'lentry';
-  entry.innerHTML = `<div class="ltime">${time}</div><div class="lmsg ${type}">${msg}</div>`;
-  logEl.appendChild(entry);
-  logEl.scrollTop = logEl.scrollHeight;
-}
+// ── THEME ──
+const tb2=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;tb2.textContent=t==='dark'?'🌙':'☀️';localStorage.setItem('vx_theme',t);}
+tb2.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+applyTheme(localStorage.getItem('vx_theme')||'dark');
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Drag & drop
-const zone = document.getElementById('uploadZone');
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-zone.addEventListener('drop', e => {
-  e.preventDefault(); zone.classList.remove('dragover');
-  const f = e.dataTransfer.files[0];
-  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('fileInput').files = dt.files; handleFile(document.getElementById('fileInput')); }
-});
-
-// Init on load
-window.addEventListener('DOMContentLoaded', initEngine);
+window.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>
 </html>
