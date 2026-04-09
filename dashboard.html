@@ -30,12 +30,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
   background-size:52px 52px}
 
 /* ─── TOPBAR ─── */
-.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px;
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:66px;
   background:rgba(3,7,15,.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
 [data-theme="light"] .topbar{background:rgba(238,243,252,.88)}
 .tlogo{font-family:var(--display);font-size:20px;letter-spacing:6px;color:var(--c);text-shadow:0 0 20px rgba(0,210,255,.4);text-decoration:none}
 .tright{display:flex;align-items:center;gap:8px}
-.ibtn{font-family:var(--mono);font-size:8px;letter-spacing:2px;padding:6px 13px;border:1px solid var(--border2);
+.ibtn{font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:6px 13px;border:1px solid var(--border2);
   color:var(--muted2);background:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
 .ibtn:hover{border-color:var(--c);color:var(--c)}
 .tbtn-green{border-color:rgba(0,255,136,.2)!important;color:var(--c3)!important}
@@ -58,10 +58,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 .kpi.green::after{background:linear-gradient(90deg,transparent,var(--c3),transparent)}
 .kpi.yellow::after{background:linear-gradient(90deg,transparent,var(--warn),transparent)}
 .kpi.purple::after{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
-.kpi-label{font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--muted2);margin-bottom:8px}
+.kpi-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--muted2);margin-bottom:8px}
 .kpi-val{font-family:var(--display);font-size:38px;letter-spacing:2px;line-height:1}
 .kpi-val.blue{color:var(--c)}.kpi-val.red{color:var(--c2)}.kpi-val.green{color:var(--c3)}.kpi-val.yellow{color:var(--warn)}.kpi-val.purple{color:var(--purple)}
-.kpi-sub{font-family:var(--mono);font-size:7px;color:var(--muted2);letter-spacing:1px;margin-top:5px}
+.kpi-sub{font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:1px;margin-top:5px}
 
 /* ─── CHART GRID ─── */
 .chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
@@ -69,15 +69,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 .chart-box{border:1px solid var(--border);background:var(--bg2);padding:18px;position:relative;overflow:hidden}
 .chart-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.3}
-.cb-title{font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--muted2);margin-bottom:14px;
+.cb-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--muted2);margin-bottom:14px;
   display:flex;align-items:center;gap:7px}
 .cb-dot{width:5px;height:5px;border-radius:50%}
 .chart-canvas-wrap{position:relative}
 
 /* ─── FILTER BAR ─── */
 .filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.filter-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted2)}
-.fchip{font-family:var(--mono);font-size:7px;letter-spacing:2px;padding:5px 13px;
+.filter-lbl{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--muted2)}
+.fchip{font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:5px 13px;
   border:1px solid var(--muted);color:var(--muted2);background:none;cursor:pointer;transition:.2s}
 .fchip.active{border-color:var(--c);color:var(--c);background:rgba(0,210,255,.05)}
 .fchip:hover{border-color:var(--c);color:var(--c)}
@@ -86,13 +86,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 /* ─── HISTORY TABLE ─── */
 .htable{width:100%;border-collapse:collapse}
 .htable thead tr{border-bottom:2px solid var(--border2)}
-.htable th{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2);
+.htable th{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted2);
   padding:10px 12px;text-align:left;font-weight:normal}
 .htable tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 .htable tbody tr:hover{background:rgba(0,210,255,.02)}
-.htable td{font-family:var(--mono);font-size:8px;padding:9px 12px;color:var(--text)}
+.htable td{font-family:var(--mono);font-size:11px;padding:9px 12px;color:var(--text)}
 .td-file{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted2)}
-.badge{display:inline-block;font-family:var(--mono);font-size:7px;letter-spacing:2px;
+.badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:2px;
   padding:2px 8px;border:1px solid}
 .badge.fake{border-color:rgba(255,31,78,.4);color:var(--c2);background:rgba(255,31,78,.05)}
 .badge.real{border-color:rgba(0,255,136,.3);color:var(--c3);background:rgba(0,255,136,.04)}
@@ -102,7 +102,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 
 /* ─── DEMO BTN ─── */
 .demo-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.dbtn{font-family:var(--mono);font-size:7px;letter-spacing:2px;padding:6px 12px;
+.dbtn{font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:6px 12px;
   border:1px solid var(--border2);color:var(--muted2);background:none;cursor:pointer;transition:.2s}
 .dbtn:hover{border-color:var(--c);color:var(--c)}
 .dbtn.danger{border-color:rgba(255,31,78,.3);color:var(--c2)}
@@ -207,7 +207,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
       <div id="emptyState" class="empty-state">
         <div class="empty-icon">📊</div>
         <div>NO SCANS YET</div>
-        <a href="engine.html" style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--c);text-decoration:none;border:1px solid var(--c);padding:7px 18px">RUN YOUR FIRST SCAN →</a>
+        <a href="engine.html" style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--c);text-decoration:none;border:1px solid var(--c);padding:7px 18px">RUN YOUR FIRST SCAN →</a>
       </div>
     </div>
   </div>
