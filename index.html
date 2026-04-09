@@ -57,7 +57,7 @@ body {
 /* ═══ TOPNAV ═══ */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  height: 62px;
+  height: 68px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 48px;
   background: rgba(3,7,15,.75);
@@ -68,7 +68,7 @@ nav {
 [data-theme="light"] nav { background: rgba(238,243,252,.82); }
 .nav-logo {
   font-family: var(--display);
-  font-size: 22px; letter-spacing: 7px; color: var(--c);
+  font-size: 25px; letter-spacing: 7px; color: var(--c);
   text-shadow: 0 0 24px rgba(0,210,255,.5);
   text-decoration: none;
 }
@@ -76,13 +76,13 @@ nav {
   display: flex; gap: 36px;
 }
 .nav-center a {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 3px;
   color: var(--muted2); text-decoration: none; transition: color .2s;
 }
 .nav-center a:hover { color: var(--c); }
 .nav-right { display: flex; align-items: center; gap: 10px; }
 .tbtn {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
   padding: 7px 16px; border: 1px solid var(--border2); color: var(--muted2);
   background: none; cursor: pointer; text-decoration: none;
   transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
@@ -96,7 +96,7 @@ nav {
 .theme-toggle {
   width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid var(--border2); background: none;
-  color: var(--muted2); cursor: pointer; font-size: 13px;
+  color: var(--muted2); cursor: pointer; font-size: 15px;
   display: flex; align-items: center; justify-content: center;
   transition: all .2s;
 }
@@ -114,7 +114,7 @@ nav {
 }
 .mob-menu.on { display: flex; }
 .mob-menu a {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px;
   color: var(--muted2); padding: 16px 28px;
   border-bottom: 1px solid var(--border); text-decoration: none; transition: color .2s;
 }
@@ -130,7 +130,7 @@ nav {
 }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 9px; letter-spacing: 4px; color: var(--c);
+  font-family: var(--mono); font-size: 12px; letter-spacing: 4px; color: var(--c);
   border: 1px solid rgba(0,210,255,.22); padding: 7px 20px;
   background: rgba(0,210,255,.04); margin-bottom: 36px;
   animation: riseIn .7s ease both;
@@ -143,7 +143,7 @@ nav {
 
 .hero-title {
   font-family: var(--display);
-  font-size: clamp(80px, 14vw, 180px);
+  font-size: clamp(90px, 15vw, 200px);
   line-height: .88; letter-spacing: 10px;
   margin-bottom: 28px;
   animation: riseIn .7s .1s ease both;
@@ -154,12 +154,12 @@ nav {
 }
 .ht-sub {
   display: block; color: var(--text); opacity: .15;
-  font-size: clamp(28px,4vw,52px); letter-spacing: 22px;
+  font-size: clamp(32px,4.5vw,58px); letter-spacing: 22px;
   margin-top: 8px;
 }
 
 .hero-desc {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px;
   color: var(--muted2); line-height: 2.1; max-width: 500px;
   margin-bottom: 48px; animation: riseIn .7s .2s ease both;
 }
@@ -175,11 +175,11 @@ nav {
 }
 .hstat:last-child { border-right: none; }
 .hstat-n {
-  font-family: var(--display); font-size: 40px; letter-spacing: 2px; color: var(--c);
+  font-family: var(--display); font-size: 44px; letter-spacing: 2px; color: var(--c);
   line-height: 1;
 }
 .hstat-l {
-  font-family: var(--mono); font-size: 7px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
   color: var(--muted2); margin-top: 4px;
 }
 
@@ -188,14 +188,14 @@ nav {
   animation: riseIn .7s .4s ease both;
 }
 .cta-main {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 3px; font-weight: 700;
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px; font-weight: 700;
   padding: 14px 40px; background: var(--c); color: #000; border: none;
   cursor: pointer; transition: all .25s; text-decoration: none;
   display: inline-flex; align-items: center; gap: 8px;
 }
 .cta-main:hover { box-shadow: 0 0 32px rgba(0,210,255,.5); transform: translateY(-2px); }
 .cta-sec {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px;
   padding: 14px 32px; background: none; color: var(--text);
   border: 1px solid var(--muted); cursor: pointer; transition: all .25s;
   text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
@@ -205,7 +205,7 @@ nav {
 .scroll-cue {
   position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 7px; letter-spacing: 3px; color: var(--muted);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px; color: var(--muted);
   animation: riseIn 1s 1s ease both;
 }
 .scroll-line {
@@ -227,7 +227,7 @@ nav {
   animation: ticker 28s linear infinite;
 }
 .ticker-item {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
   color: var(--muted2); padding: 0 36px;
   border-right: 1px solid var(--muted); white-space: nowrap;
 }
@@ -241,15 +241,15 @@ nav {
   padding: 100px 48px;
 }
 .sec-tag {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 5px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 5px;
   color: var(--c); margin-bottom: 10px; display: block;
 }
 .sec-title {
-  font-family: var(--display); font-size: clamp(36px,5vw,68px);
+  font-family: var(--display); font-size: clamp(42px,5.5vw,76px);
   letter-spacing: 5px; line-height: 1; margin-bottom: 14px;
 }
 .sec-sub {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
   color: var(--muted2); line-height: 1.9; max-width: 500px;
 }
 
@@ -270,15 +270,15 @@ nav {
 }
 .step-card:hover::after { opacity: 1; }
 .step-n {
-  font-family: var(--display); font-size: 64px; letter-spacing: 2px;
+  font-family: var(--display); font-size: 70px; letter-spacing: 2px;
   color: rgba(0,210,255,.06); position: absolute; bottom: 8px; right: 12px;
 }
-.step-icon { font-size: 26px; margin-bottom: 14px; }
+.step-icon { font-size: 29px; margin-bottom: 14px; }
 .step-title {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
   color: var(--c); margin-bottom: 10px;
 }
-.step-body { font-family: var(--body); font-size: 13px; color: var(--muted2); line-height: 1.7; }
+.step-body { font-family: var(--body); font-size: 15px; color: var(--muted2); line-height: 1.7; }
 
 /* ═══ FEATURES / SIGNALS ═══ */
 .signals-grid {
@@ -301,15 +301,15 @@ nav {
 }
 .sig-card:hover::before { opacity: 1; }
 .sig-num {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
   color: var(--muted); margin-bottom: 8px;
 }
-.sig-icon { font-size: 20px; margin-bottom: 10px; }
+.sig-icon { font-size: 22px; margin-bottom: 10px; }
 .sig-title {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
   color: var(--c); margin-bottom: 8px;
 }
-.sig-body { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+.sig-body { font-size: 14px; color: var(--muted2); line-height: 1.65; }
 
 /* ═══ LIVE DEMO PREVIEW ═══ */
 .demo-wrap {
@@ -317,30 +317,30 @@ nav {
   max-width: 1160px; margin: 0 auto; padding: 0 48px 100px;
   display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
 }
-.demo-text .sec-title { font-size: clamp(28px,4vw,52px); }
+.demo-text .sec-title { font-size: clamp(32px,4.5vw,58px); }
 .demo-panel {
   border: 1px solid var(--border2); background: var(--bg2); padding: 28px;
   position: relative;
 }
 .demo-panel::before {
   content: 'LIVE EXAMPLE'; position: absolute; top: -1px; left: 24px;
-  font-family: var(--mono); font-size: 7px; letter-spacing: 3px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
   background: var(--c); color: #000; padding: 3px 10px;
 }
 .demo-row {
   display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
 }
-.demo-label { font-family: var(--mono); font-size: 7px; letter-spacing: 1px; color: var(--muted2); width: 124px; flex-shrink: 0; }
+.demo-label { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; color: var(--muted2); width: 124px; flex-shrink: 0; }
 .demo-bar { flex: 1; height: 3px; background: rgba(255,255,255,.05); overflow: hidden; }
 .demo-fill { height: 100%; border-radius: 0; }
-.demo-pct { font-family: var(--mono); font-size: 8px; width: 32px; text-align: right; }
+.demo-pct { font-family: var(--mono); font-size: 11px; width: 32px; text-align: right; }
 .verdict-big {
   margin-top: 20px; padding: 16px; text-align: center;
   border: 1px solid rgba(255,31,78,.3); background: rgba(255,31,78,.04);
 }
-.vb-eyebrow { font-family: var(--mono); font-size: 7px; letter-spacing: 3px; color: var(--muted2); margin-bottom: 6px; }
+.vb-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; color: var(--muted2); margin-bottom: 6px; }
 .vb-word {
-  font-family: var(--display); font-size: 36px; letter-spacing: 6px; color: var(--c2);
+  font-family: var(--display); font-size: 40px; letter-spacing: 6px; color: var(--c2);
   text-shadow: 0 0 24px rgba(255,31,78,.45);
 }
 
@@ -354,21 +354,21 @@ footer {
 }
 .foot-brand { flex: 1; min-width: 200px; }
 .foot-logo {
-  font-family: var(--display); font-size: 22px; letter-spacing: 7px; color: var(--c);
+  font-family: var(--display); font-size: 25px; letter-spacing: 7px; color: var(--c);
   margin-bottom: 8px;
 }
 .foot-tag {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
   color: var(--muted2); line-height: 1.9; max-width: 300px;
 }
 .foot-nav { display: flex; flex-direction: column; gap: 12px; }
 .foot-nav a {
-  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
   color: var(--muted2); text-decoration: none; transition: color .2s;
 }
 .foot-nav a:hover { color: var(--c); }
 .foot-copy {
-  width: 100%; font-family: var(--mono); font-size: 7px;
+  width: 100%; font-family: var(--mono); font-size: 10px;
   letter-spacing: 2px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 24px;
 }
 
