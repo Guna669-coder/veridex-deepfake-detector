@@ -272,6 +272,64 @@ body{
 .log-m{font-family:var(--mono);font-size:8px;line-height:1.5}
 .log-m.ok{color:var(--c3)}.log-m.w{color:var(--warn)}.log-m.e{color:var(--c2)}.log-m.i{color:var(--c)}
 
+/* ─── FEEDBACK ─── */
+.fb-wrap{margin-top:14px;border:1px solid var(--border2);padding:16px;background:rgba(0,210,255,.02);display:none}
+.fb-wrap.on{display:block}
+.fb-title{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--muted2);margin-bottom:10px}
+.fb-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.fb-btn{
+  flex:1;min-width:120px;padding:10px 14px;border:1px solid;cursor:pointer;
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2px;
+  background:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.fb-btn.correct{border-color:var(--c3);color:var(--c3)}
+.fb-btn.correct:hover{background:rgba(0,255,136,.1)}
+.fb-btn.wrong{border-color:var(--c2);color:var(--c2)}
+.fb-btn.wrong:hover{background:rgba(255,31,78,.1)}
+.fb-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.fb-status{font-family:var(--mono);font-size:8px;color:var(--muted2);letter-spacing:1px;display:none}
+.fb-status.on{display:block}
+
+/* ─── AI WEIGHT PANEL ─── */
+.ai-wrap{border:1px solid rgba(191,90,242,.25);background:rgba(191,90,242,.03);padding:16px;margin-top:14px;display:none}
+.ai-wrap.on{display:block}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:#bf5af2;box-shadow:0 0 8px #bf5af2;animation:blink 1.5s infinite}
+.ai-title{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:#bf5af2}
+.ai-thinking{font-family:var(--mono);font-size:8px;color:var(--muted2);letter-spacing:1px;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-response{font-family:var(--mono);font-size:9px;color:var(--text);line-height:1.8;letter-spacing:.5px;display:none}
+.ai-response.on{display:block}
+.ai-weights{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px;display:none}
+.ai-weights.on{display:grid}
+.aw-row{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid var(--border);background:var(--bg3)}
+.aw-name{font-family:var(--mono);font-size:7px;color:var(--muted2);flex:1;letter-spacing:.5px}
+.aw-old{font-family:var(--mono);font-size:7px;color:var(--muted);text-decoration:line-through}
+.aw-arrow{font-size:8px;color:var(--muted2)}
+.aw-new{font-family:var(--display);font-size:12px}
+.aw-new.up{color:var(--c3)}.aw-new.down{color:var(--c2)}.aw-new.same{color:var(--muted2)}
+.ai-ask-row{display:flex;gap:8px;margin-top:12px}
+.ai-input{
+  flex:1;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--mono);font-size:9px;
+  padding:8px 12px;outline:none;letter-spacing:1px;
+}
+.ai-input:focus{border-color:#bf5af2}
+.ai-ask-btn{
+  font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:2px;
+  padding:8px 16px;border:1px solid #bf5af2;color:#bf5af2;
+  background:rgba(191,90,242,.05);cursor:pointer;transition:.2s;white-space:nowrap;
+}
+.ai-ask-btn:hover{background:rgba(191,90,242,.15)}
+.ai-ask-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.learn-badge{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:7px;letter-spacing:2px;
+  padding:4px 10px;border:1px solid rgba(191,90,242,.25);
+  color:#bf5af2;background:rgba(191,90,242,.04);margin-top:8px;
+}
+.lb-count{font-family:var(--display);font-size:14px;color:#bf5af2}
+
 /* ─── TOAST ─── */
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
@@ -401,6 +459,37 @@ body{
       <div class="exp-lbl">WHY THIS VERDICT</div>
       <div id="expList"></div>
     </div>
+
+    <!-- FEEDBACK -->
+    <div class="fb-wrap" id="fbWrap">
+      <div class="fb-title">WAS THIS VERDICT CORRECT?</div>
+      <div class="fb-row">
+        <button class="fb-btn correct" id="fbCorrect" onclick="submitFeedback(true)">✅ YES — CORRECT</button>
+        <button class="fb-btn wrong"   id="fbWrong"   onclick="submitFeedback(false)">❌ NO — WRONG</button>
+      </div>
+      <div class="fb-status" id="fbStatus"></div>
+      <div class="learn-badge">
+        <span>🧠 LEARNED FROM</span>
+        <span class="lb-count" id="learnCount">0</span>
+        <span>CONFIRMED SCANS</span>
+      </div>
+    </div>
+
+    <!-- AI PANEL -->
+    <div class="ai-wrap" id="aiWrap">
+      <div class="ai-header">
+        <div class="ai-dot"></div>
+        <div class="ai-title">CLAUDE AI — PATTERN ANALYSIS</div>
+      </div>
+      <div class="ai-thinking" id="aiThinking">ANALYSING SCAN HISTORY...</div>
+      <div class="ai-response" id="aiResponse"></div>
+      <div class="ai-weights" id="aiWeights"></div>
+      <div class="ai-ask-row">
+        <input class="ai-input" id="aiInput" placeholder="Ask AI about this analysis..." onkeydown="if(event.key==='Enter')askAI()">
+        <button class="ai-ask-btn" id="aiAskBtn" onclick="askAI()">ASK AI</button>
+      </div>
+    </div>
+
   </div>
 
 </div><!-- /main-col -->
@@ -929,13 +1018,320 @@ function log(msg, type='i') {
   el.appendChild(div); el.scrollTop=el.scrollHeight;
 }
 
+// ═══════════════════════════════════════════════════
+// SELF-LEARNING SYSTEM — Option B + C
+// B: User feedback → local weight adjustment
+// C: Claude API → pattern reasoning → weight update
+// ═══════════════════════════════════════════════════
+
+// Default signal weights (must sum to 1.0)
+const DEFAULT_WEIGHTS = {
+  pixel:.12, fft:.12, ela:.12, face:.12, color:.08,
+  hand:.16, lighting:.12, background:.08, textgeo:.08
+};
+const SIG_NAMES = ['pixel','fft','ela','face','color','hand','lighting','background','textgeo'];
+
+function loadWeights() {
+  try {
+    const w = JSON.parse(localStorage.getItem('vx_weights') || 'null');
+    return w || {...DEFAULT_WEIGHTS};
+  } catch(e) { return {...DEFAULT_WEIGHTS}; }
+}
+
+function saveWeights(w) {
+  // Normalize so weights sum to 1.0
+  const total = Object.values(w).reduce((s,v)=>s+v,0);
+  const norm  = {};
+  SIG_NAMES.forEach(k => norm[k] = parseFloat((w[k]/total).toFixed(4)));
+  localStorage.setItem('vx_weights', JSON.stringify(norm));
+  return norm;
+}
+
+function loadFeedback() {
+  try { return JSON.parse(localStorage.getItem('vx_feedback') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveFeedbackEntry(entry) {
+  const fb = loadFeedback();
+  fb.unshift(entry);
+  if (fb.length > 100) fb.length = 100;
+  localStorage.setItem('vx_feedback', JSON.stringify(fb));
+}
+
+// Update learnCount badge
+function refreshLearnBadge() {
+  const fb = loadFeedback();
+  document.getElementById('learnCount').textContent = fb.length;
+}
+
+// ── B: USER FEEDBACK HANDLER ──
+let lastScanData = null; // set after each analysis
+
+function submitFeedback(wasCorrect) {
+  if (!lastScanData) return;
+  const { isFake, S } = lastScanData;
+
+  // Was verdict right or wrong?
+  const verdictRight = wasCorrect;
+  // If wrong: real image was called fake → signals that fired high were false positives → lower their weight
+  // If right: signals that fired high were correct → boost their weight
+
+  const weights = loadWeights();
+  const LEARN_RATE = 0.018;
+
+  SIG_NAMES.forEach(k => {
+    const score = S[k] || 0;
+    const fired = score > 45; // signal "fired" if > 45%
+    if (verdictRight) {
+      // Correct verdict — boost signals that matched
+      if (isFake && fired)   weights[k] = Math.min(.30, weights[k] + LEARN_RATE * (score/100));
+      if (!isFake && !fired) weights[k] = Math.min(.30, weights[k] + LEARN_RATE * 0.5);
+    } else {
+      // Wrong verdict — penalise signals that misfired
+      if (isFake && fired)   weights[k] = Math.max(.02, weights[k] - LEARN_RATE * (score/100));
+      if (!isFake && !fired) weights[k] = Math.max(.02, weights[k] - LEARN_RATE * 0.5);
+    }
+  });
+
+  const newW = saveWeights(weights);
+
+  // Save feedback entry
+  saveFeedbackEntry({
+    ts: Date.now(),
+    isFake, wasCorrect,
+    signals: {...S},
+    weightsAfter: newW
+  });
+
+  // Update UI
+  document.getElementById('fbCorrect').disabled = true;
+  document.getElementById('fbWrong').disabled   = true;
+  const st = document.getElementById('fbStatus');
+  st.textContent = wasCorrect
+    ? `✓ FEEDBACK RECORDED — ENGINE BOOSTED ${Object.keys(S).filter(k=>S[k]>45).length} SIGNAL(S)`
+    : `✓ FEEDBACK RECORDED — ENGINE PENALISED MISFIRED SIGNALS`;
+  st.classList.add('on');
+  refreshLearnBadge();
+  log(`FEEDBACK: ${wasCorrect?'CORRECT':'WRONG'} — WEIGHTS UPDATED`,'ok');
+
+  // Trigger Claude analysis if we have ≥3 feedback entries
+  const fb = loadFeedback();
+  if (fb.length >= 3) {
+    showAIPanel();
+    runClaudeAnalysis(newW, fb.slice(0,10), lastScanData);
+  }
+}
+
+// ── C: CLAUDE API PATTERN ANALYSIS ──
+function showAIPanel() {
+  document.getElementById('aiWrap').classList.add('on');
+  document.getElementById('aiThinking').style.display = 'block';
+  document.getElementById('aiResponse').classList.remove('on');
+  document.getElementById('aiWeights').classList.remove('on');
+}
+
+async function runClaudeAnalysis(currentWeights, feedbackHistory, scanData) {
+  const prompt = buildClaudePrompt(currentWeights, feedbackHistory, scanData);
+  try {
+    const reply = await callClaude(prompt);
+    displayClaudeResponse(reply, currentWeights);
+  } catch(e) {
+    document.getElementById('aiThinking').style.display = 'none';
+    document.getElementById('aiResponse').textContent = '⚠ AI analysis unavailable — check API key.';
+    document.getElementById('aiResponse').classList.add('on');
+  }
+}
+
+function buildClaudePrompt(weights, feedback, scan) {
+  const sigSummary = SIG_NAMES.map(k =>
+    `  ${k.toUpperCase()}: score=${(scan.S[k]||0).toFixed(1)}%, weight=${(weights[k]*100).toFixed(1)}%`
+  ).join('\n');
+
+  const fbSummary = feedback.slice(0,8).map((f,i) =>
+    `  [${i+1}] verdict=${f.isFake?'FAKE':'REAL'} feedback=${f.wasCorrect?'CORRECT':'WRONG'} ` +
+    `top_signal=${SIG_NAMES.reduce((a,k)=>f.signals[k]>f.signals[a]?k:a,'pixel').toUpperCase()}=${(f.signals[SIG_NAMES.reduce((a,k)=>f.signals[k]>f.signals[a]?k:a,'pixel')]||0).toFixed(0)}%`
+  ).join('\n');
+
+  return `You are VERIDEX, a deepfake detection AI forensic engine. Analyse the following scan data and user feedback history to provide:
+1. A 2-3 sentence plain-English verdict explanation for this specific scan
+2. Which AI generator likely created this image (Midjourney / DALL-E 3 / Stable Diffusion / StyleGAN / Real photo) and why
+3. Recommended weight adjustments for the 9 forensic signals based on feedback patterns
+
+CURRENT SCAN SIGNALS:
+${sigSummary}
+
+CURRENT VERDICT: ${scan.isFake ? 'DEEPFAKE' : 'AUTHENTIC'} (${scan.fake.toFixed(1)}% fake probability)
+
+RECENT FEEDBACK HISTORY (last ${feedback.length} confirmed scans):
+${fbSummary}
+
+CURRENT SIGNAL WEIGHTS:
+${SIG_NAMES.map(k=>`  ${k}: ${(weights[k]*100).toFixed(1)}%`).join('\n')}
+
+Respond in this exact JSON format:
+{
+  "verdict_explanation": "2-3 sentence plain English explanation of why this image is/isn't a deepfake",
+  "likely_generator": "Midjourney|DALL-E 3|Stable Diffusion|StyleGAN|Real Photo",
+  "generator_reason": "one sentence why",
+  "weight_adjustments": {
+    "pixel": 0.12,
+    "fft": 0.12,
+    "ela": 0.12,
+    "face": 0.12,
+    "color": 0.08,
+    "hand": 0.16,
+    "lighting": 0.12,
+    "background": 0.08,
+    "textgeo": 0.08
+  },
+  "weight_reasoning": "one sentence explaining the key weight change"
+}
+Only return valid JSON. No markdown, no explanation outside the JSON.`;
+}
+
+async function callClaude(prompt) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!resp.ok) throw new Error('API error ' + resp.status);
+  const data = await resp.json();
+  const text = data.content.map(b => b.text||'').join('');
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+function displayClaudeResponse(data, oldWeights) {
+  document.getElementById('aiThinking').style.display = 'none';
+
+  // Verdict explanation + generator
+  const resp = document.getElementById('aiResponse');
+  resp.innerHTML = `
+    <div style="margin-bottom:10px;padding:10px;border-left:2px solid #bf5af2;background:rgba(191,90,242,.05)">
+      ${data.verdict_explanation}
+    </div>
+    <div style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted2);margin-bottom:4px">LIKELY GENERATOR</div>
+    <div style="font-family:var(--display);font-size:20px;color:#bf5af2;letter-spacing:3px;margin-bottom:6px">${data.likely_generator}</div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted2);margin-bottom:10px">${data.generator_reason}</div>
+    <div style="font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2);border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+      ⚖ WEIGHT REASONING: ${data.weight_reasoning}
+    </div>`;
+  resp.classList.add('on');
+
+  // Apply + display new weights
+  if (data.weight_adjustments) {
+    const newW = saveWeights(data.weight_adjustments);
+    const container = document.getElementById('aiWeights');
+    container.innerHTML = SIG_NAMES.map(k => {
+      const oldV = (oldWeights[k]*100).toFixed(1);
+      const newV = (newW[k]*100).toFixed(1);
+      const diff  = parseFloat(newV) - parseFloat(oldV);
+      const cls   = diff > 0.1 ? 'up' : diff < -0.1 ? 'down' : 'same';
+      const arrow = diff > 0.1 ? '↑' : diff < -0.1 ? '↓' : '=';
+      return `<div class="aw-row">
+        <div class="aw-name">${k.toUpperCase()}</div>
+        <div class="aw-old">${oldV}%</div>
+        <div class="aw-arrow">${arrow}</div>
+        <div class="aw-new ${cls}">${newV}%</div>
+      </div>`;
+    }).join('');
+    container.classList.add('on');
+    log(`CLAUDE: WEIGHTS UPDATED (${data.likely_generator})`, 'ok');
+  }
+}
+
+// ── FOLLOW-UP QUESTIONS ──
+let aiConvHistory = [];
+
+async function askAI() {
+  const inp = document.getElementById('aiInput');
+  const q = inp.value.trim(); if (!q) return;
+  inp.value = '';
+  document.getElementById('aiAskBtn').disabled = true;
+
+  const resp = document.getElementById('aiResponse');
+  resp.innerHTML += `
+    <div style="margin-top:10px;padding:8px 10px;border:1px solid var(--border);background:rgba(0,210,255,.03)">
+      <span style="font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2)">YOU: </span>
+      <span style="font-family:var(--mono);font-size:8px">${q}</span>
+    </div>
+    <div id="aiReplySlot" style="padding:8px 10px;font-family:var(--mono);font-size:8px;color:var(--muted2);letter-spacing:1px;animation:pulse 1s infinite">THINKING...</div>`;
+  resp.classList.add('on');
+
+  // Build context
+  if (lastScanData) {
+    aiConvHistory.push({ role:'user', content: `Context: scan signals=${JSON.stringify(lastScanData.S)}, verdict=${lastScanData.isFake?'DEEPFAKE':'AUTHENTIC'}(${lastScanData.fake.toFixed(1)}%). Current weights=${JSON.stringify(loadWeights())}. User question: ${q}` });
+  } else {
+    aiConvHistory.push({ role:'user', content: q });
+  }
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:600,
+        system:'You are VERIDEX AI, a forensic deepfake detection assistant. Answer concisely about image forensics, deepfake signals, and detection methods. Use plain language.',
+        messages: aiConvHistory
+      })
+    });
+    const data = await r.json();
+    const reply = data.content.map(b=>b.text||'').join('');
+    aiConvHistory.push({ role:'assistant', content:reply });
+    document.getElementById('aiReplySlot').style.animation='none';
+    document.getElementById('aiReplySlot').style.color='var(--text)';
+    document.getElementById('aiReplySlot').innerHTML = `<span style="font-family:var(--mono);font-size:7px;letter-spacing:2px;color:#bf5af2">CLAUDE AI: </span>${reply}`;
+  } catch(e) {
+    document.getElementById('aiReplySlot').textContent = '⚠ Could not reach Claude API.';
+  }
+  document.getElementById('aiAskBtn').disabled = false;
+}
+
+// ── PATCH showResults to store lastScanData + show feedback ──
+const _origShowResults = showResults;
+showResults = function(isFake, fake, S, details) {
+  _origShowResults(isFake, fake, S, details);
+  // Store for feedback + AI
+  lastScanData = { isFake, fake, S: {...S} };
+  // Show feedback panel
+  document.getElementById('fbWrap').classList.add('on');
+  document.getElementById('fbCorrect').disabled = false;
+  document.getElementById('fbWrong').disabled   = false;
+  document.getElementById('fbStatus').classList.remove('on');
+  document.getElementById('fbStatus').textContent = '';
+  document.getElementById('aiWrap').classList.remove('on');
+  aiConvHistory = [];
+  // Show AI panel immediately if enough feedback exists
+  const fb = loadFeedback();
+  if (fb.length >= 5) {
+    showAIPanel();
+    runClaudeAnalysis(loadWeights(), fb.slice(0,10), lastScanData);
+  }
+  refreshLearnBadge();
+};
+
+// ── PATCH resetAll to hide feedback panels ──
+const _origResetAll = resetAll;
+resetAll = function() {
+  _origResetAll();
+  document.getElementById('fbWrap').classList.remove('on');
+  document.getElementById('aiWrap').classList.remove('on');
+  lastScanData = null;
+  aiConvHistory = [];
+};
+
 // ── THEME ──
 const tb2=document.getElementById('themeBtn');
 function applyTheme(t){document.documentElement.dataset.theme=t;tb2.textContent=t==='dark'?'🌙':'☀️';localStorage.setItem('vx_theme',t);}
 tb2.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 applyTheme(localStorage.getItem('vx_theme')||'dark');
 
-window.addEventListener('DOMContentLoaded', boot);
+window.addEventListener('DOMContentLoaded', () => { boot(); refreshLearnBadge(); });
 </script>
 </body>
 </html>
