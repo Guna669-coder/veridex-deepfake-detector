@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — Detection Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/engine.css">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- ─── TOPBAR ─── -->
+<div class="topbar">
+  <div>
+    <a href="index.html" class="nav-logo">VERIDEX</a>
+    <div class="nav-logo-sub">NEURAL FORENSIC ENGINE V5</div>
+  </div>
+  <div class="nav-right">
+    <div class="status-pill"><div class="pill-dot"></div><span id="statusLbl">LOADING</span></div>
+    <button class="ibtn" onclick="EngineUI.toggleHeatmap()">🔥 HEATMAP</button>
+    <a class="ibtn" href="dashboard.html">📊</a>
+    <a class="ibtn" href="index.html">← HOME</a>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<div class="shell">
+<div class="grid">
+
+<!-- ─── MAIN COL ─── -->
+<div class="main-col">
+
+  <!-- UPLOAD -->
+  <div>
+    <div class="lbl">INPUT IMAGE</div>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileIn').click()">
+      <div class="dz-corner tl"></div><div class="dz-corner tr"></div>
+      <div class="dz-corner bl"></div><div class="dz-corner br"></div>
+      <div class="dz-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="1"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M3 15l5-5 4 4 3-3 6 6"/>
+        </svg>
+      </div>
+      <div class="dz-title">DROP IMAGE</div>
+      <div class="dz-sub">PNG · JPG · WEBP<br>100% BROWSER — NOTHING UPLOADED</div>
+      <div class="dz-btn">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        SELECT FILE
+      </div>
+    </div>
+    <input type="file" id="fileIn" accept="image/*" onchange="EngineUI.loadFile(this)" style="display:none">
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap" id="prevWrap">
+    <div class="lbl">PREVIEW</div>
+    <div class="preview-frame" id="prevFrame">
+      <img id="prevImg" src="" alt="">
+      <canvas id="hmCv" class="hm-cv"></canvas>
+      <div class="scan-line" id="scanLine"></div>
+      <div class="f-corner tl"></div><div class="f-corner tr"></div>
+      <div class="f-corner bl"></div><div class="f-corner br"></div>
+    </div>
+    <div class="act-row">
+      <button class="abtn" id="runBtn" onclick="EngineUI.runAnalysis()">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        RUN ANALYSIS
+      </button>
+      <button class="abtn red" onclick="EngineUI.resetAll()">✕ RESET</button>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="pipe-wrap" id="pipeWrap">
+    <div class="lbl">FORENSIC PIPELINE</div>
+    <div class="prow idle" id="p1"><div class="pdot"></div><div class="pname">PIXEL &amp; SENSOR NOISE</div><div class="pval" id="pv1">—</div></div>
+    <div class="prow idle" id="p2"><div class="pdot"></div><div class="pname">FFT SPECTRAL PATTERN</div><div class="pval" id="pv2">—</div></div>
+    <div class="prow idle" id="p3"><div class="pdot"></div><div class="pname">ELA COMPRESSION</div><div class="pval" id="pv3">—</div></div>
+    <div class="prow idle" id="p4"><div class="pdot"></div><div class="pname">SKIN &amp; FACE TEXTURE</div><div class="pval" id="pv4">—</div></div>
+    <div class="prow idle" id="p5"><div class="pdot"></div><div class="pname">COLOR HISTOGRAM</div><div class="pval" id="pv5">—</div></div>
+    <div class="prow idle" id="p6"><div class="pdot"></div><div class="pname">HAND ANATOMY</div><div class="pval" id="pv6">—</div></div>
+    <div class="prow idle" id="p7"><div class="pdot"></div><div class="pname">LIGHTING PHYSICS</div><div class="pval" id="pv7">—</div></div>
+    <div class="prow idle" id="p8"><div class="pdot"></div><div class="pname">BACKGROUND COHERENCE</div><div class="pval" id="pv8">—</div></div>
+    <div class="prow idle" id="p9"><div class="pdot"></div><div class="pname">TEXT &amp; GEOMETRY</div><div class="pval" id="pv9">—</div></div>
+    <div class="prow idle" id="p10"><div class="pdot"></div><div class="pname">ENSEMBLE VERDICT</div><div class="pval" id="pv10">—</div></div>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict-wrap" id="verdWrap">
+    <div class="lbl">VERDICT</div>
+    <div class="v-card" id="vCard">
+      <div class="v-eyebrow">FORENSIC ANALYSIS COMPLETE</div>
+      <div class="v-title" id="vTitle">—</div>
+      <div class="v-meta" id="vMeta">—</div>
+    </div>
+    <div class="conf-block">
+      <div class="conf-row"><div class="conf-lbl">DEEPFAKE PROBABILITY</div><div class="conf-pct" id="fakePct" style="color:var(--c2)">0%</div></div>
+      <div class="conf-track"><div class="conf-fill red" id="fakeFill" style="width:0%"></div></div>
+    </div>
+    <div class="conf-block">
+      <div class="conf-row"><div class="conf-lbl">AUTHENTICITY SCORE</div><div class="conf-pct" id="realPct" style="color:var(--c3)">0%</div></div>
+      <div class="conf-track"><div class="conf-fill grn" id="realFill" style="width:0%"></div></div>
+    </div>
+    <div class="fg">
+      <div class="fg-cell"><div class="fg-n">PIXEL NOISE</div><div class="fg-v" id="m1">—</div></div>
+      <div class="fg-cell"><div class="fg-n">FFT SPECTRAL</div><div class="fg-v" id="m2">—</div></div>
+      <div class="fg-cell"><div class="fg-n">ELA</div><div class="fg-v" id="m3">—</div></div>
+      <div class="fg-cell"><div class="fg-n">SKIN TEXTURE</div><div class="fg-v" id="m4">—</div></div>
+      <div class="fg-cell"><div class="fg-n">COLOR</div><div class="fg-v" id="m5">—</div></div>
+      <div class="fg-cell"><div class="fg-n">HAND ANATOMY</div><div class="fg-v" id="m6">—</div></div>
+      <div class="fg-cell"><div class="fg-n">LIGHTING</div><div class="fg-v" id="m7">—</div></div>
+      <div class="fg-cell"><div class="fg-n">BACKGROUND</div><div class="fg-v" id="m8">—</div></div>
+      <div class="fg-cell"><div class="fg-n">TEXT/GEO</div><div class="fg-v" id="m9">—</div></div>
+      <div class="fg-cell"><div class="fg-n">ENSEMBLE</div><div class="fg-v" id="m10">—</div></div>
+    </div>
+    <div class="exp-box" id="expBox">
+      <div class="exp-lbl">WHY THIS VERDICT</div>
+      <div id="expList"></div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="fb-wrap" id="fbWrap">
+      <div class="fb-title">WAS THIS VERDICT CORRECT?</div>
+      <div class="fb-row">
+        <button class="fb-btn correct" id="fbCorrect" onclick="LearnSystem.submitFeedback(true)">✅ YES — CORRECT</button>
+        <button class="fb-btn wrong"   id="fbWrong"   onclick="LearnSystem.submitFeedback(false)">❌ NO — WRONG</button>
+      </div>
+      <div class="fb-status" id="fbStatus"></div>
+      <div class="learn-badge">
+        <span>🧠 LEARNED FROM</span>
+        <span class="lb-count" id="learnCount">0</span>
+        <span>CONFIRMED SCANS</span>
+      </div>
+    </div>
+
+    <!-- AI PANEL -->
+    <div class="ai-wrap" id="aiWrap">
+      <div class="ai-header">
+        <div class="ai-dot"></div>
+        <div class="ai-title">CLAUDE AI — PATTERN ANALYSIS</div>
+      </div>
+      <div class="ai-thinking" id="aiThinking">ANALYSING SCAN HISTORY...</div>
+      <div class="ai-response" id="aiResponse"></div>
+      <div class="ai-weights" id="aiWeights"></div>
+      <div class="ai-ask-row">
+        <input class="ai-input" id="aiInput" placeholder="Ask AI about this analysis..." onkeydown="if(event.key==='Enter')LearnSystem.askAI()">
+        <button class="ai-ask-btn" id="aiAskBtn" onclick="LearnSystem.askAI()">ASK AI</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-col -->
+
+<!-- ─── SIDE COL ─── -->
+<div class="side-col">
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></div><div class="sc-title">THREAT INDEX</div></div>
+    <div class="gauge-box">
+      <div class="g-wrap">
+        <svg class="gsvg" viewBox="0 0 90 90">
+          <circle class="g-bg" cx="45" cy="45" r="35"/>
+          <circle class="g-fill" id="gFill" cx="45" cy="45" r="35"/>
+        </svg>
+        <div class="g-center">
+          <div class="g-num" id="gNum" style="color:var(--c)">—</div>
+          <div class="g-sub">RISK</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--c);box-shadow:0 0 5px var(--c)"></div><div class="sc-title">SIGNAL SCORES</div></div>
+    <div class="sig-r"><div class="sig-n">PIXEL</div><div class="sig-bw"><div class="sig-b" id="sb1" style="width:0%"></div></div><div class="sig-p" id="sp1" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">FFT</div><div class="sig-bw"><div class="sig-b" id="sb2" style="width:0%"></div></div><div class="sig-p" id="sp2" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">ELA</div><div class="sig-bw"><div class="sig-b" id="sb3" style="width:0%"></div></div><div class="sig-p" id="sp3" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">SKIN</div><div class="sig-bw"><div class="sig-b" id="sb4" style="width:0%"></div></div><div class="sig-p" id="sp4" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">COLOR</div><div class="sig-bw"><div class="sig-b" id="sb5" style="width:0%"></div></div><div class="sig-p" id="sp5" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">HANDS</div><div class="sig-bw"><div class="sig-b" id="sb6" style="width:0%"></div></div><div class="sig-p" id="sp6" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">LIGHT</div><div class="sig-bw"><div class="sig-b" id="sb7" style="width:0%"></div></div><div class="sig-p" id="sp7" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">BG</div><div class="sig-bw"><div class="sig-b" id="sb8" style="width:0%"></div></div><div class="sig-p" id="sp8" style="color:var(--muted2)">—</div></div>
+    <div class="sig-r"><div class="sig-n">TEXT/GEO</div><div class="sig-bw"><div class="sig-b" id="sb9" style="width:0%"></div></div><div class="sig-p" id="sp9" style="color:var(--muted2)">—</div></div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--c3);box-shadow:0 0 5px var(--c3)"></div><div class="sc-title">SESSION STATS</div></div>
+    <div class="stat-r"><div class="stat-l">TOTAL SCANNED</div><div class="stat-v" id="sTotal" style="color:var(--c)">0</div></div>
+    <div class="stat-r"><div class="stat-l">DEEPFAKES</div><div class="stat-v" id="sFake" style="color:var(--c2)">0</div></div>
+    <div class="stat-r"><div class="stat-l">AUTHENTIC</div><div class="stat-v" id="sReal" style="color:var(--c3)">0</div></div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-dot" style="background:var(--muted)"></div><div class="sc-title">SYSTEM LOG</div></div>
+    <div class="log-wrap" id="logWrap">
+      <div class="log-e"><div class="log-t">--:--</div><div class="log-m i">BOOT SEQUENCE...</div></div>
+    </div>
+  </div>
+
+</div><!-- /side-col -->
+</div><!-- /grid -->
+</div><!-- /shell -->
+
+<div class="toast" id="toast"></div>
+<canvas id="wkCv" style="display:none"></canvas>
+
+<!-- JS — order matters: core signals → learn → ui → theme -->
+<script src="js/engine-core.js"></script>
+<script src="js/engine-learn.js"></script>
+<script src="js/engine-ui.js"></script>
+<script src="js/theme.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => EngineUI.boot());
+</script>
+</body>
+</html>

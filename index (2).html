@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — AI Deepfake Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<div class="bg-grid"></div>
+<canvas id="bgc" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45"></canvas>
+
+<!-- ─── NAV ─── -->
+<nav class="topbar">
+  <a href="index.html" class="nav-logo">VERIDEX</a>
+  <div class="nav-center">
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#signals">SIGNALS</a>
+    <a href="dashboard.html">DASHBOARD</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn">🌙</button>
+    <a href="engine.html" class="ibtn primary">▶ DETECT NOW</a>
+    <button class="hbg" id="hbg" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="mob-menu" id="mobMenu">
+  <a href="#how">HOW IT WORKS</a>
+  <a href="#signals">SIGNALS</a>
+  <a href="dashboard.html">📊 DASHBOARD</a>
+  <a href="engine.html">▶ DETECT NOW</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-badge">⬡ NEURAL FORENSIC ENGINE V5</div>
+  <h1 class="hero-title">
+    <span class="ht-glow">VERIDEX</span>
+    <span class="ht-sub">AI DETECTOR</span>
+  </h1>
+  <p class="hero-desc">REAL-TIME DEEPFAKE DETECTION · 10 FORENSIC SIGNALS<br>100% BROWSER-SIDE · NO SERVER · NO DATA STORED</p>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">10</div><div class="hstat-l">FORENSIC SIGNALS</div></div>
+    <div class="hstat"><div class="hstat-n">99%</div><div class="hstat-l">ACCURACY TARGET</div></div>
+    <div class="hstat"><div class="hstat-n">&lt;3S</div><div class="hstat-l">ANALYSIS TIME</div></div>
+    <div class="hstat"><div class="hstat-n">0</div><div class="hstat-l">SERVER NEEDED</div></div>
+  </div>
+  <div class="hero-ctas">
+    <a href="engine.html" class="cta-main">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      DETECT AN IMAGE
+    </a>
+    <a href="dashboard.html" class="cta-sec">📊 VIEW DASHBOARD</a>
+    <a href="#how" class="cta-sec">HOW IT WORKS ↓</a>
+  </div>
+  <div class="scroll-cue">
+    <span>SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ─── TICKER ─── -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ─── HOW IT WORKS ─── -->
+<div id="how" class="sec">
+  <span class="sec-tag">PROCESS</span>
+  <h2 class="sec-title">HOW IT WORKS</h2>
+  <p class="sec-sub">Upload any image. Our forensic engine runs 10 parallel signal analyses and delivers a verdict in under 3 seconds.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-n">01</div>
+      <div class="step-icon">📤</div>
+      <div class="step-title">UPLOAD MEDIA</div>
+      <div class="step-body">Drop any image — portrait, news photo, social post. PNG, JPG, WEBP supported. Fully browser-side, nothing leaves your device.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-n">02</div>
+      <div class="step-icon">🧠</div>
+      <div class="step-title">10-SIGNAL SCAN</div>
+      <div class="step-body">Pixel noise, FFT spectral, ELA compression, skin texture, color histogram, hand anatomy, lighting physics, background coherence, text and geometry run in parallel.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-n">03</div>
+      <div class="step-icon">⚖️</div>
+      <div class="step-title">ENSEMBLE VERDICT</div>
+      <div class="step-body">Weighted aggregation of all signals. Anatomy and physics signals carry higher weight — the exact domains AI generators fail at most.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-n">04</div>
+      <div class="step-icon">📋</div>
+      <div class="step-title">FULL REPORT</div>
+      <div class="step-body">Deepfake probability, per-signal scores, ELA heatmap overlay, and plain-language explanation of every red flag found.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SIGNALS ─── -->
+<div id="signals" class="signals-wrap">
+  <span class="sec-tag">DETECTION CAPABILITIES</span>
+  <h2 class="sec-title">10 FORENSIC SIGNALS</h2>
+  <p class="sec-sub">Each signal targets a specific failure mode unique to AI image generators like Midjourney, DALL-E 3, and Stable Diffusion.</p>
+  <div class="signals-grid">
+    <div class="sig-card"><div class="sig-num">SIGNAL 01</div><div class="sig-icon">🔬</div><div class="sig-title">PIXEL &amp; SENSOR NOISE</div><div class="sig-body">Real cameras produce photon shot noise. AI images are unnaturally clean — near-zero noise floor is a primary synthetic signature.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 02</div><div class="sig-icon">🌊</div><div class="sig-title">FFT SPECTRAL PATTERN</div><div class="sig-body">GAN upsampling leaves characteristic 2px checkerboard artifacts in the frequency domain. Stable Diffusion shows unique spectral periodicity.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 03</div><div class="sig-icon">📊</div><div class="sig-title">ELA COMPRESSION</div><div class="sig-body">Error Level Analysis exposes freshly generated images — no editing history means abnormally uniform block compression variance.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 04</div><div class="sig-icon">👁️</div><div class="sig-title">SKIN &amp; FACE TEXTURE</div><div class="sig-body">AI skin is too smooth — no pores, no micro-texture variation. Luminance std-dev below threshold flags plasticky AI faces.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 05</div><div class="sig-icon">🎨</div><div class="sig-title">COLOR HISTOGRAM</div><div class="sig-body">AI generators produce suspiciously smooth, bell-curved histograms and abnormally low saturation variance — real photos are messier.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 06</div><div class="sig-icon">✋</div><div class="sig-title">HAND ANATOMY</div><div class="sig-body">AI consistently fails at hands — extra fingers, merged digits, impossible joints. We count protrusions and measure boundary complexity.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 07</div><div class="sig-icon">💡</div><div class="sig-title">LIGHTING PHYSICS</div><div class="sig-body">Shadows in conflicting directions, misplaced specular highlights — AI treats lighting as decoration, not physics.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 08</div><div class="sig-icon">🌆</div><div class="sig-title">BACKGROUND COHERENCE</div><div class="sig-body">AI deprioritizes backgrounds — warped objects, repeating texture tiles, and impossible depth are hallmarks of generation artifacts.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 09</div><div class="sig-icon">📐</div><div class="sig-title">TEXT &amp; GEOMETRY</div><div class="sig-body">Curved straight lines, nonsense text, broken vanishing points — AI fails spatial reasoning that real cameras record perfectly.</div></div>
+    <div class="sig-card"><div class="sig-num">SIGNAL 10</div><div class="sig-icon">⚙️</div><div class="sig-title">ENSEMBLE AGGREGATION</div><div class="sig-body">Weighted combination with anatomy and physics boosts. Multiple high signals trigger cascading confidence multipliers.</div></div>
+  </div>
+</div>
+
+<!-- ─── DEMO PREVIEW ─── -->
+<div class="demo-wrap">
+  <div>
+    <span class="sec-tag">LIVE EXAMPLE</span>
+    <h2 class="sec-title">SEE THE<br>ENGINE FIRE</h2>
+    <p class="sec-sub">Real output for a Midjourney-generated portrait. Seven signals fired — ensemble correctly flagged it as DEEPFAKE with 87% confidence.</p>
+    <br><br>
+    <a href="engine.html" class="cta-main">TRY YOUR OWN IMAGE →</a>
+  </div>
+  <div class="demo-panel">
+    <div class="demo-row"><div class="demo-label">PIXEL NOISE</div><div class="demo-bar"><div class="demo-fill" style="width:78%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">78%</div></div>
+    <div class="demo-row"><div class="demo-label">FFT SPECTRAL</div><div class="demo-bar"><div class="demo-fill" style="width:82%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">82%</div></div>
+    <div class="demo-row"><div class="demo-label">ELA COMPRESSION</div><div class="demo-bar"><div class="demo-fill" style="width:91%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">91%</div></div>
+    <div class="demo-row"><div class="demo-label">SKIN TEXTURE</div><div class="demo-bar"><div class="demo-fill" style="width:85%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">85%</div></div>
+    <div class="demo-row"><div class="demo-label">HAND ANATOMY</div><div class="demo-bar"><div class="demo-fill" style="width:95%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">95%</div></div>
+    <div class="demo-row"><div class="demo-label">LIGHTING</div><div class="demo-bar"><div class="demo-fill" style="width:38%;background:linear-gradient(90deg,#ffb700,#ffd060)"></div></div><div class="demo-pct" style="color:#ffb700">38%</div></div>
+    <div class="demo-row"><div class="demo-label">BACKGROUND</div><div class="demo-bar"><div class="demo-fill" style="width:63%;background:linear-gradient(90deg,#ff1f4e,#ff6080)"></div></div><div class="demo-pct" style="color:#ff1f4e">63%</div></div>
+    <div class="verdict-big">
+      <div class="vb-eyebrow">FORENSIC VERDICT</div>
+      <div class="vb-word">DEEPFAKE</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div>
+    <div class="foot-logo">VERIDEX</div>
+    <div class="foot-tag">IN A WORLD WHERE SEEING IS NO LONGER BELIEVING — WE GIVE YOU THE TRUTH.<br>ALL ANALYSIS RUNS LOCALLY. NO DATA LEAVES YOUR BROWSER.</div>
+  </div>
+  <nav class="foot-nav">
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#signals">DETECTION SIGNALS</a>
+    <a href="engine.html">DETECTOR ENGINE</a>
+    <a href="dashboard.html">ANALYTICS DASHBOARD</a>
+  </nav>
+  <div class="foot-copy">© 2025 VERIDEX — NEURAL FORENSIC ENGINE · BUILT FOR TRUTH</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/theme.js"></script>
+<script src="js/bg-canvas.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>

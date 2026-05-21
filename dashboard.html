@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- ─── TOPBAR ─── -->
+<div class="topbar">
+  <a href="index.html" class="nav-logo">VERIDEX</a>
+  <div class="nav-right">
+    <a href="engine.html" class="ibtn green">▶ DETECTOR</a>
+    <a href="index.html" class="ibtn">← HOME</a>
+    <button class="ibtn" onclick="Dashboard.exportCSV()">⬇ EXPORT CSV</button>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ─── KPI ROW ─── -->
+  <div class="kpi-row">
+    <div class="kpi blue">
+      <div class="kpi-label">TOTAL SCANS</div>
+      <div class="kpi-val blue" id="kTotal">0</div>
+      <div class="kpi-sub">ALL TIME</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">DEEPFAKES</div>
+      <div class="kpi-val red" id="kFake">0</div>
+      <div class="kpi-sub">DETECTED</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">AUTHENTIC</div>
+      <div class="kpi-val green" id="kReal">0</div>
+      <div class="kpi-sub">VERIFIED</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">AVG CONFIDENCE</div>
+      <div class="kpi-val yellow" id="kConf">—</div>
+      <div class="kpi-sub">PERCENT</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">HIGHEST THREAT</div>
+      <div class="kpi-val purple" id="kHigh">—</div>
+      <div class="kpi-sub">SCORE</div>
+    </div>
+  </div>
+
+  <!-- ─── CHART ROW 1 ─── -->
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="cb-title">
+        <div class="cb-dot" style="background:var(--c);box-shadow:0 0 5px var(--c)"></div>
+        14-DAY SCAN TREND
+      </div>
+      <canvas id="trendChart" height="90"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="cb-title">
+        <div class="cb-dot" style="background:var(--c2);box-shadow:0 0 5px var(--c2)"></div>
+        VERDICT SPLIT
+      </div>
+      <div style="max-width:200px;margin:0 auto">
+        <canvas id="donutChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CHART ROW 2 ─── -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <div class="cb-title">
+        <div class="cb-dot" style="background:var(--warn);box-shadow:0 0 5px var(--warn)"></div>
+        CONFIDENCE DISTRIBUTION
+      </div>
+      <canvas id="histChart" height="110"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="cb-title">
+        <div class="cb-dot" style="background:var(--purple);box-shadow:0 0 5px var(--purple)"></div>
+        SIGNAL RADAR
+      </div>
+      <div style="max-width:220px;margin:0 auto">
+        <canvas id="radarChart" height="140"></canvas>
+      </div>
+    </div>
+    <div class="chart-box">
+      <div class="cb-title">
+        <div class="cb-dot" style="background:var(--c3);box-shadow:0 0 5px var(--c3)"></div>
+        TOP SIGNALS FIRED
+      </div>
+      <canvas id="barChart" height="110"></canvas>
+    </div>
+  </div>
+
+  <!-- ─── HISTORY TABLE ─── -->
+  <div class="chart-box">
+    <div class="cb-title">
+      <div class="cb-dot" style="background:var(--muted2)"></div>
+      SCAN HISTORY
+    </div>
+
+    <!-- Demo buttons -->
+    <div class="demo-row">
+      <span class="filter-lbl">ADD DEMO DATA:</span>
+      <button class="dbtn" onclick="Dashboard.addDemo(1)">+1</button>
+      <button class="dbtn" onclick="Dashboard.addDemo(10)">+10</button>
+      <button class="dbtn" onclick="Dashboard.addDemo(50)">+50</button>
+      <button class="dbtn" onclick="Dashboard.addDemo(100)">+100</button>
+      <div class="spacer"></div>
+      <button class="dbtn danger" onclick="Dashboard.clearAll()">✕ CLEAR ALL</button>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="filter-bar">
+      <span class="filter-lbl">FILTER:</span>
+      <button class="fchip active" onclick="Dashboard.setFilter('ALL',this)">ALL</button>
+      <button class="fchip" onclick="Dashboard.setFilter('DEEPFAKE',this)">DEEPFAKE</button>
+      <button class="fchip" onclick="Dashboard.setFilter('AUTHENTIC',this)">AUTHENTIC</button>
+    </div>
+
+    <!-- Table -->
+    <div style="overflow-x:auto">
+      <table class="htable">
+        <thead>
+          <tr>
+            <th>FILE</th>
+            <th>VERDICT</th>
+            <th>FAKE %</th>
+            <th>PIXEL</th>
+            <th>FFT</th>
+            <th>ELA</th>
+            <th>SKIN</th>
+            <th>DATE</th>
+          </tr>
+        </thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div>NO SCANS YET</div>
+        <a href="engine.html">RUN YOUR FIRST SCAN →</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div class="toast" id="toast"></div>
+
+<script src="js/theme.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+  // Re-render charts when theme changes
+  const _origApply = ThemeManager.apply.bind(ThemeManager);
+  ThemeManager.apply = function(t) {
+    _origApply(t);
+    if (window.Dashboard) Dashboard.rebuildCharts();
+  };
+</script>
+</body>
+</html>
