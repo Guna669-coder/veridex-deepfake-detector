@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════
+   VERIDEX — NAV.CSS
+   Topbar, mobile menu, shared nav styles
+═══════════════════════════════════════════ */
+
+/* ─── TOPBAR ─── */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: rgba(3,7,15,0.82);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.35s;
+}
+[data-theme="light"] .topbar {
+  background: rgba(238,243,252,0.88);
+}
+
+/* ─── LOGO ─── */
+.nav-logo {
+  font-family: var(--display);
+  font-size: 25px; letter-spacing: 7px; color: var(--c);
+  text-shadow: 0 0 24px rgba(0,210,255,0.5);
+  text-decoration: none;
+}
+.nav-logo-sub {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px; color: var(--muted2);
+  margin-top: 2px;
+}
+
+/* ─── CENTER LINKS ─── */
+.nav-center {
+  display: flex; gap: 36px;
+}
+.nav-center a {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 3px;
+  color: var(--muted2); text-decoration: none; transition: color 0.2s;
+}
+.nav-center a:hover { color: var(--c); }
+
+/* ─── RIGHT SIDE ─── */
+.nav-right {
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* ─── ICON BUTTON ─── */
+.ibtn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+  padding: 7px 14px; border: 1px solid var(--border2);
+  color: var(--muted2); background: none; cursor: pointer;
+  transition: all 0.2s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.ibtn:hover { border-color: var(--c); color: var(--c); }
+.ibtn.green {
+  border-color: rgba(0,255,136,0.25);
+  color: var(--c3);
+}
+.ibtn.green:hover { border-color: var(--c3); }
+.ibtn.primary {
+  background: var(--c); color: #000;
+  border-color: var(--c); font-weight: 700;
+}
+.ibtn.primary:hover {
+  box-shadow: 0 0 24px rgba(0,210,255,0.45);
+  transform: translateY(-1px);
+}
+
+/* ─── THEME TOGGLE ─── */
+.theme-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--border2); background: none;
+  color: var(--muted2); cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.theme-btn:hover { border-color: var(--c); color: var(--c); }
+
+/* ─── STATUS PILL ─── */
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+  padding: 5px 12px;
+  border: 1px solid rgba(0,255,136,0.2);
+  color: var(--c3); background: rgba(0,255,136,0.03);
+}
+.pill-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c3); box-shadow: 0 0 7px var(--c3);
+  animation: blink 2s infinite;
+}
+
+/* ─── HAMBURGER ─── */
+.hbg {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 5px;
+}
+.hbg span {
+  display: block; width: 22px; height: 1px;
+  background: var(--muted2); transition: 0.3s;
+}
+
+/* ─── MOBILE MENU ─── */
+.mob-menu {
+  display: none; position: fixed;
+  top: 66px; left: 0; right: 0; z-index: 199;
+  flex-direction: column; gap: 0;
+  background: rgba(3,7,15,0.97); backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+.mob-menu.on { display: flex; }
+.mob-menu a {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px;
+  color: var(--muted2); padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none; transition: color 0.2s;
+}
+.mob-menu a:hover { color: var(--c); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .topbar { padding: 0 20px; }
+  .nav-center { display: none; }
+  .ibtn.primary { display: none; }
+  .hbg { display: flex; }
+}
+@media (max-width: 500px) {
+  .topbar { padding: 0 14px; }
+}
