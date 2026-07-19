@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════
+# VERIDEX FRONTEND — .gitignore
+# ═══════════════════════════════════════════
+
+# ── OS Files ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ── Editor Files ──
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Environment ──
+.env
+.env.local
+.env.production
+
+# ── Temp Files ──
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# ── Build Output ──
+dist/
+build/
+out/
+
+# ── Cache ──
+.cache/
+.parcel-cache/
+.npm/
