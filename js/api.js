@@ -6,7 +6,7 @@
 const API = (() => {
   // ── Auto-switch between local dev and deployed backend ──
   // Edit PROD_URL to your Railway URL after deploying.
-  const PROD_URL  = 'https://veridex-backend-hj98.onrender.com/api';
+  const PROD_URL  = 'https://veridex-backend-hj98.onrender.com';
   const LOCAL_URL = 'http://localhost:5000/api';
   const { hostname } = window.location;
   const BASE_URL = (hostname === 'localhost' || hostname === '127.0.0.1') ? LOCAL_URL : PROD_URL;
