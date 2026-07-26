@@ -1,0 +1,166 @@
+/* ═══════════════════════════════════════════
+   VERIDEX — BASE.CSS
+   Shared design tokens, reset, typography
+═══════════════════════════════════════════ */
+
+/* ─── DESIGN TOKENS ─── */
+:root {
+  --bg:      #03070f;
+  --bg2:     #060c18;
+  --bg3:     #0a1220;
+  --border:  rgba(0,210,255,0.10);
+  --border2: rgba(0,210,255,0.22);
+  --c:       #00d2ff;
+  --c2:      #ff1f4e;
+  --c3:      #00ff88;
+  --warn:    #ffb700;
+  --purple:  #bf5af2;
+  --text:    #c5ddf5;
+  --muted:   #2d4a68;
+  --muted2:  #4a6880;
+  --display: 'Bebas Neue', sans-serif;
+  --body:    'Rajdhani', sans-serif;
+  --mono:    'Share Tech Mono', monospace;
+}
+
+/* ─── LIGHT THEME ─── */
+[data-theme="light"] {
+  --bg:      #eef3fc;
+  --bg2:     #f8faff;
+  --bg3:     #ffffff;
+  --border:  rgba(0,140,200,0.12);
+  --border2: rgba(0,140,200,0.25);
+  --c:       #0088cc;
+  --c2:      #e0003c;
+  --c3:      #007744;
+  --warn:    #cc8800;
+  --purple:  #8833cc;
+  --text:    #0d1e38;
+  --muted:   #b0c4d8;
+  --muted2:  #6080a0;
+}
+
+/* ─── RESET ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  overflow-x: hidden;
+  transition: background 0.35s, color 0.35s;
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(0,210,255,0.2);
+  color: var(--c);
+}
+
+a { text-decoration: none; }
+button { cursor: pointer; }
+img { display: block; max-width: 100%; }
+
+/* ─── GRID BACKGROUND ─── */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(rgba(0,210,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,255,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+[data-theme="light"] .bg-grid {
+  background:
+    linear-gradient(rgba(0,100,180,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,100,180,0.04) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+.bg-glow {
+  position: fixed; top: -150px; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 400px; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse, rgba(0,100,220,0.07) 0%, transparent 70%);
+}
+
+/* ─── SECTION UTILITY ─── */
+.sec-tag {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 5px; color: var(--c);
+  margin-bottom: 10px; display: block;
+}
+.sec-title {
+  font-family: var(--display);
+  font-size: clamp(36px, 5vw, 68px);
+  letter-spacing: 5px; line-height: 1; margin-bottom: 14px;
+}
+.sec-sub {
+  font-family: var(--mono);
+  font-size: 12px; letter-spacing: 2px;
+  color: var(--muted2); line-height: 1.9; max-width: 500px;
+}
+
+/* ─── SECTION LABEL ─── */
+.lbl {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+  color: var(--muted2); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lbl::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ─── BUTTONS ─── */
+.btn-primary {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px; font-weight: 700;
+  padding: 14px 40px; background: var(--c); color: #000; border: none;
+  cursor: pointer; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 32px rgba(0,210,255,0.5); transform: translateY(-2px);
+}
+.btn-outline {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px;
+  padding: 14px 32px; background: none; color: var(--text);
+  border: 1px solid var(--muted); cursor: pointer; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-outline:hover { border-color: var(--c2); color: var(--c2); }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
+  padding: 12px 24px; background: var(--bg3);
+  border: 1px solid var(--c); color: var(--c);
+  z-index: 9999; transition: transform 0.3s; pointer-events: none;
+}
+.toast.on { transform: translateX(-50%) translateY(0); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes scanAnim {
+  0%   { top: 0; }
+  100% { top: 100%; }
+}

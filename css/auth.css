@@ -1,0 +1,105 @@
+/* ═══════════════════════════════════════════
+   VERIDEX — AUTH.CSS
+   Login / register / password reset pages
+═══════════════════════════════════════════ */
+
+.auth-shell {
+  position: relative; z-index: 1;
+  min-height: calc(100vh - 66px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 36px 32px; position: relative; overflow: hidden;
+  animation: riseIn 0.4s ease;
+}
+.auth-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--c), transparent);
+}
+
+.auth-eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 4px;
+  color: var(--muted2); margin-bottom: 6px; text-align: center;
+}
+.auth-title {
+  font-family: var(--display); font-size: 34px; letter-spacing: 4px;
+  text-align: center; margin-bottom: 24px; color: var(--text);
+}
+
+/* ─── TABS ─── */
+.auth-tabs {
+  display: flex; border: 1px solid var(--border2); margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1; text-align: center; padding: 11px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+  color: var(--muted2); background: none; border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.auth-tab.active { background: rgba(0,210,255,0.08); color: var(--c); }
+.auth-tab:not(.active):hover { color: var(--text); }
+
+/* ─── FORM ─── */
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-form.hidden { display: none; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted2);
+}
+.form-input {
+  font-family: var(--body); font-size: 14px;
+  padding: 12px 14px; background: var(--bg3);
+  border: 1px solid var(--border2); color: var(--text);
+  transition: border-color 0.2s; outline: none;
+}
+.form-input:focus { border-color: var(--c); }
+.form-input::placeholder { color: var(--muted); }
+
+.form-submit {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 3px; font-weight: 700;
+  padding: 13px; background: var(--c); color: #000; border: none;
+  cursor: pointer; transition: all 0.25s; margin-top: 6px;
+}
+.form-submit:hover:not(:disabled) { box-shadow: 0 0 28px rgba(0,210,255,0.45); }
+.form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.form-error {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--c2); background: rgba(255,31,78,0.06);
+  border: 1px solid rgba(255,31,78,0.25); padding: 10px 12px;
+  display: none;
+}
+.form-error.on { display: block; }
+
+.form-success {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--c3); background: rgba(0,255,136,0.06);
+  border: 1px solid rgba(0,255,136,0.25); padding: 10px 12px;
+  display: none;
+}
+.form-success.on { display: block; }
+
+.auth-links {
+  display: flex; justify-content: space-between; margin-top: 4px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+}
+.auth-links a { color: var(--muted2); transition: color 0.2s; }
+.auth-links a:hover { color: var(--c); }
+
+.auth-note {
+  text-align: center; margin-top: 20px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px; color: var(--muted2);
+  line-height: 1.8;
+}
+
+/* ─── STATUS PAGE (verify email) ─── */
+.status-icon { font-size: 44px; text-align: center; margin-bottom: 14px; }
+.status-msg {
+  text-align: center; font-family: var(--mono); font-size: 12px;
+  letter-spacing: 1px; color: var(--muted2); line-height: 1.8; margin-bottom: 22px;
+}

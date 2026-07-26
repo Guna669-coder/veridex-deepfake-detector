@@ -1,0 +1,48 @@
+/* ═══════════════════════════════════════════
+   VERIDEX — ADMIN.CSS
+   Admin panel — user & scan management
+═══════════════════════════════════════════ */
+
+.role-select {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  background: var(--bg3); color: var(--text);
+  border: 1px solid var(--border2); padding: 5px 8px; cursor: pointer;
+}
+
+.role-pill {
+  display: inline-block; font-family: var(--mono); font-size: 9px;
+  letter-spacing: 2px; padding: 2px 8px; border: 1px solid;
+}
+.role-pill.admin { border-color: rgba(191,90,242,0.4); color: var(--purple); background: rgba(191,90,242,0.06); }
+.role-pill.user  { border-color: var(--border2); color: var(--muted2); }
+
+.row-actions { display: flex; gap: 6px; align-items: center; }
+.icon-del {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  color: var(--c2); background: none; border: 1px solid rgba(255,31,78,0.3);
+  padding: 5px 9px; cursor: pointer; transition: 0.2s;
+}
+.icon-del:hover { background: rgba(255,31,78,0.08); }
+.icon-del:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pager {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--muted2);
+}
+.pager button {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  padding: 6px 14px; border: 1px solid var(--border2); background: none;
+  color: var(--muted2); cursor: pointer; transition: 0.2s;
+}
+.pager button:hover:not(:disabled) { border-color: var(--c); color: var(--c); }
+.pager button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.admin-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 4px;
+}
+
+.access-gate {
+  padding: 80px 20px; text-align: center;
+  font-family: var(--mono); letter-spacing: 3px; color: var(--muted2);
+}
