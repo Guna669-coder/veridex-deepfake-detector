@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — Verify Email</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
+<script src="js/api.js"></script>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<nav class="topbar">
+  <a href="index.html" class="nav-logo">VERIDEX</a>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</nav>
+
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="status-icon" id="statusIcon">⏳</div>
+    <div class="auth-title" style="font-size:26px" id="statusTitle">VERIFYING...</div>
+    <div class="status-msg" id="statusMsg">Hold on while we confirm your email address.</div>
+    <a href="auth.html" class="form-submit" style="display:block;text-align:center;text-decoration:none" id="statusCta">GO TO LOGIN</a>
+  </div>
+</div>
+
+<script src="js/theme.js"></script>
+<script>
+  (async () => {
+    const token = new URLSearchParams(location.search).get('token');
+    const icon  = document.getElementById('statusIcon');
+    const title = document.getElementById('statusTitle');
+    const msg   = document.getElementById('statusMsg');
+
+    if (!token) {
+      icon.textContent = '⚠'; title.textContent = 'MISSING TOKEN';
+      msg.textContent = 'This verification link is incomplete. Check the link in your email and try again.';
+      return;
+    }
+    try {
+      const res = await API.auth.verifyEmail(token);
+      icon.textContent = '✅'; title.textContent = 'EMAIL VERIFIED';
+      msg.textContent = res.message || 'Your email has been verified. You can now sign in.';
+    } catch (err) {
+      icon.textContent = '❌'; title.textContent = 'VERIFICATION FAILED';
+      msg.textContent = err.message || 'This link is invalid or has expired. Request a new one from your account.';
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VERIDEX — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="js/api.js"></script>
+<script>
+  if (!API.auth.isLoggedIn()) {
+    window.location.replace('auth.html?redirect=admin.html');
+  }
+</script>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<div class="topbar">
+  <a href="index.html" class="nav-logo">VERIDEX <span style="color:var(--purple);font-size:14px">ADMIN</span></a>
+  <div class="nav-right">
+    <a href="dashboard.html" class="ibtn">📊 DASHBOARD</a>
+    <a href="engine.html" class="ibtn green">▶ DETECTOR</a>
+    <div class="nav-auth" id="navAuth"></div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<div class="page" id="adminPage" style="display:none">
+
+  <div class="kpi-row">
+    <div class="kpi blue"><div class="kpi-label">TOTAL USERS</div><div class="kpi-val blue" id="aUsers">0</div><div class="kpi-sub">REGISTERED</div></div>
+    <div class="kpi purple"><div class="kpi-label">TOTAL SCANS</div><div class="kpi-val purple" id="aScans">0</div><div class="kpi-sub">PLATFORM-WIDE</div></div>
+    <div class="kpi red"><div class="kpi-label">DEEPFAKES</div><div class="kpi-val red" id="aFakes">0</div><div class="kpi-sub">DETECTED</div></div>
+    <div class="kpi green"><div class="kpi-label">AUTHENTIC</div><div class="kpi-val green" id="aReal">0</div><div class="kpi-sub">VERIFIED</div></div>
+    <div class="kpi yellow"><div class="kpi-label">AVG CONFIDENCE</div><div class="kpi-val yellow" id="aConf">—</div><div class="kpi-sub">PERCENT</div></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="admin-section-head">
+        <div class="cb-title"><div class="cb-dot" style="background:var(--c);box-shadow:0 0 5px var(--c)"></div>7-DAY PLATFORM TREND</div>
+        <button class="dbtn" id="digestBtn">✉ SEND WEEKLY DIGEST</button>
+      </div>
+      <canvas id="adminTrendChart" height="90"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="cb-title"><div class="cb-dot" style="background:var(--c2);box-shadow:0 0 5px var(--c2)"></div>RECENT SCANS</div>
+      <div style="overflow-x:auto">
+        <table class="htable">
+          <thead><tr><th>USER</th><th>FILE</th><th>VERDICT</th><th>DATE</th></tr></thead>
+          <tbody id="recentScansBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── USERS ─── -->
+  <div class="chart-box" style="margin-bottom:16px">
+    <div class="cb-title"><div class="cb-dot" style="background:var(--c3);box-shadow:0 0 5px var(--c3)"></div>ALL USERS</div>
+    <div style="overflow-x:auto">
+      <table class="htable">
+        <thead><tr><th>NAME</th><th>EMAIL</th><th>ROLE</th><th>SCANS</th><th>JOINED</th><th>ACTIONS</th></tr></thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+    <div class="pager" id="usersPager"></div>
+  </div>
+
+  <!-- ─── SCANS ─── -->
+  <div class="chart-box">
+    <div class="admin-section-head">
+      <div class="cb-title"><div class="cb-dot" style="background:var(--muted2)"></div>ALL SCANS</div>
+      <div class="filter-bar" style="margin:0">
+        <span class="filter-lbl">FILTER:</span>
+        <button class="fchip active" onclick="AdminPanel.setScanFilter('',this)">ALL</button>
+        <button class="fchip" onclick="AdminPanel.setScanFilter('DEEPFAKE',this)">DEEPFAKE</button>
+        <button class="fchip" onclick="AdminPanel.setScanFilter('AUTHENTIC',this)">AUTHENTIC</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="htable">
+        <thead><tr><th>USER</th><th>FILE</th><th>VERDICT</th><th>FAKE %</th><th>DATE</th></tr></thead>
+        <tbody id="scansBody"></tbody>
+      </table>
+    </div>
+    <div class="pager" id="scansPager"></div>
+  </div>
+
+</div>
+
+<div class="access-gate" id="accessGate" style="display:none">
+  <div style="font-size:40px;margin-bottom:14px">🔒</div>
+  ADMIN ACCESS REQUIRED<br><br>
+  <a href="dashboard.html" class="ibtn" style="text-decoration:none">← BACK TO DASHBOARD</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/auth-nav.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
